@@ -1,0 +1,5 @@
+Parser: Take training and test files, store data in db
+
+Training: Retrieve and train
+
+Test: Run test suite, show some examples with confidence level, calculate cost
