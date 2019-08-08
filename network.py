@@ -60,8 +60,10 @@ class NeuralNetwork:
 				# Theta transpose and activations for the current hidden layer
 				theta_t = self.thetas[i].transpose()
 				a = activations[i]
-				a_t = a.transpose()
+				# a_t = a.transpose()
+				a_t = a.reshape((-1, 1)).transpose()
 				print(f'Theta_t shape: {theta_t.shape}, a shape: {a.shape}')
+				print(f'a_t shape: {a_t.shape}')
 				print(f'errors[i + 1] shape: {errors[i + 1].shape}, deltas[i] shape: {deltas[i].shape}')
 
 				# The error for the layer is the matrix product of the thetas
@@ -74,11 +76,14 @@ class NeuralNetwork:
 				# layer and the transpose of the current activations.
 				# This value is added so as to 'accumulate' it over the entire
 				# training database.
-				deltas[i] += np.multiply(errors[i + 1], a_t)
+				deltas[i] += np.multiply(errors[i + 1][:, np.newaxis], a_t)
 
 		# noinspection PyTypeChecker
-		change = deltas / len(xs)
-		self.thetas += change
+		change = [d / len(xs) for d in deltas]
+		# print('Change shape: ', [a.shape for a in change])
+		# print('Deltas shape: ', [d.shape for d in deltas])
+		for i in range(self.l - 1):
+			self.thetas[i] -= change[i]
 
 
 # n = NeuralNetwork(3, [3, 5, 10])
@@ -87,8 +92,19 @@ class NeuralNetwork:
 with open('training_data\\data0', 'rb') as f:
 	im = [int(x) for x in f.read(28 * 28)]
 
-
+y = np.array([1] + [0] * 9)
 n = NeuralNetwork(5, [784, 1024, 1024, 1024, 10])
-print(n.predict(im)[-1])
-n.train([im], [0])
-print(n.predict(im)[-1])
+
+before = n.predict(im)[-1]
+n.train([im], [y])
+after = n.predict(im)[-1]
+
+print()
+print('Prediction before training:', before)
+print('Prediction after training: ', after)
+print()
+print('Offset before training: ', y - before)
+print('Offset after training: ', y - after)
+print()
+print('Squared mean error before: ', sum((y - before) ** 2))
+print('Squared mean error after: ', sum((y - after) ** 2))
