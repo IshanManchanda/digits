@@ -1,20 +1,19 @@
 import numpy as np
 
 
-# TODO: Fix error on line 76:
-#  ValueError: shapes (17,16) and (17,) not aligned: 16 (dim 1) != 17 (dim 0)
-
-# TODO: Switch to Leaky ReLU or something
-
 class NeuralNetwork:
-	def __init__(self, l, ns):
-		self.l = l  # Number of layers
+	def __init__(self, ns, alpha=0.01):
+		self.l = len(ns)  # Number of layers
 		self.ns = ns  # Number of neurons in each layer
+		self.alpha = alpha  # Parameter for LReLU
 
-		# Randomly initialize thetas and biases
+		# Randomly initialize thetas with a normal distribution with mean 0
+		# and standard deviation as the reciprocal of the number of inputs
+		# received by the particular neuron.
+		# We account for the bias unit by generating an extra weight.
 		self.thetas = [
-			(np.random.rand(ns[i], ns[i - 1] + 1) * 2) - 1
-			for i in range(1, l)
+			np.random.randn(ns[i], ns[i - 1] + 1) / np.sqrt(ns[i - 1] + 1)
+			for i in range(1, self.l)
 		]
 
 	def predict(self, x):
@@ -23,31 +22,30 @@ class NeuralNetwork:
 
 	def get_activations(self, x):
 		# Validate the size of the input.
-		if len(x) != self.ns[0]:
-			raise ValueError(
-				'Number of inputs != number of input neurons! '
-				f'Expected: {self.ns[0]}, received: {len(x)}'
-			)
+		self.validate_input(x)
 
-		# We add a 1 to the end to account for the bias.
-		activations = [np.append(x, 1)]
+		# We scale down the input to be in [0, 1].
+		# Also, we add a 1 to the end to account for the bias.
+		activations = [np.append(x / 255, 1)]
 
 		# Iterate over each layer, excluding the output layer
 		for i in range(self.l - 2):
 			# The input to this layer is the matrix product of the weights
 			# associated with this layer and the activations of the previous
 			# layer.
-			z = np.dot(self.thetas[i], activations[i])
+			z = np.array(np.dot(self.thetas[i], activations[i]), dtype=int)
 
-			# Apply the activation (sigmoid) function to get the activations
+			# Apply the activation (LReLU) function to get the activations
 			# for this layer, and add a 1 to the end for the bias.
-			activations.append(np.append(1 / (1 + np.exp(-z)), 1))
+			activations.append(np.append(self.activate(z), 1))
 
 		# For the output layer, we apply the softmax function, computed as:
 		# exp(z) / sum(exp(z in zs))
 		# The sum of outputs is clearly 1, which gives us
 		# a useful interpretation as the 'confidence' for each possible output.
-		z = np.exp(np.dot(self.thetas[-1], activations[-1]))
+		z = np.dot(self.thetas[-1], activations[-1])
+		# We also offset each element of z by the maximum to prevent overflows.
+		z = np.exp(z - np.max(z))
 		z_sum = sum(z)
 		activations.append(z / z_sum)
 
@@ -65,27 +63,35 @@ class NeuralNetwork:
 			activations = self.get_activations(x)
 
 			# The error in the prediction is simply the difference
+			# between the predicted and actual outputs.
 			errors = [np.array([0]) for _ in range(self.l)]
 			errors[-1] = activations[-1] - y
 
 			# Loop over all hidden layers, backwards
 			for i in range(self.l - 2, 0, -1):
 				# Assign some variables to make the following code cleaner.
-				theta_t = self.thetas[i].transpose()
-				a = activations[i]
+				a, e = activations[i], errors[i + 1]
 				a_t = a.reshape((-1, 1)).transpose()
+				theta_t = self.thetas[i].transpose()
 
 				# The error for the layer is the matrix product of the thetas
 				# for that layer and the errors for the next layer, times
-				# the derivative of the activation function (a * (1 - a))
-				errors[i] = np.dot(theta_t, errors[i + 1]) * a * (1 - a)
+				# the derivative of the activation function: (a * (1 - a))
+				# Also, we discard the error in the bias unit if it is present,
+				# opting to only adjust its theta.
+				if theta_t.shape[1] != e.shape[0]:
+					errors[i] = np.dot(theta_t, e[:-1]) * self.derivative(a)
+					deltas[i] += np.multiply(e[:-1].reshape((-1, 1)), a_t)
+				else:
+					errors[i] = np.dot(theta_t, e) * self.derivative(a)
+					deltas[i] += np.multiply(e.reshape((-1, 1)), a_t)
 
-				# Delta, the change in the parameters as indicated by this set,
-				# is given by the matrix product of the errors of the next
-				# layer and the transpose of the current activations.
-				# This value is added so as to 'accumulate' it over the entire
-				# training database.
-				deltas[i] += np.multiply(errors[i + 1][:, np.newaxis], a_t)
+			# Delta, the change in the parameters as indicated by this set,
+			# is given by the matrix product of the errors of the next
+			# layer and the transpose of the current activations.
+			# This value is added so as to 'accumulate' it over the entire
+			# training database.
+			# deltas[i] += np.multiply(e.reshape((-1, 1)), a_t)
 
 		# noinspection PyTypeChecker
 		change = [d / len(xs) for d in deltas]
@@ -94,10 +100,32 @@ class NeuralNetwork:
 		for i in range(self.l - 1):
 			self.thetas[i] -= change[i]
 
+	def activate(self, z):
+		# The chosen activation function, the Leaky Rectified Linear Unit,
+		# is computed as: {        z,   z >= 0
+		#                 {alpha * z,   z < 0
+		return np.where(z >= 0, z, self.alpha * z)
+
+	def derivative(self, a):
+		# The derivative of the activation function is given by:
+		# f'(z) = {    1,   z >= 0 which implies f(z) >= 0
+		#         {alpha,    z < 0 which implies f(z) < 0
+		return np.where(a >= 0, 1, self.alpha)
+
+	def validate_input(self, x):
+		if len(x) != self.ns[0]:
+			raise ValueError(
+				'Number of inputs != number of input neurons! '
+				f'Expected: {self.ns[0]}, received: {len(x)}'
+			)
+
 
 def main():
-	n = NeuralNetwork(4, [784, 16, 16, 10])
-	train_all(n, examples=100)
+	n = NeuralNetwork([784, 64, 64, 10])
+	# test_one(n, 0, examples=10)
+	# train_all(n, examples=1000, cycles=5)
+	# test_all(n, examples=20)
+	train_all(n, examples=100, cycles=50)
 	test_all(n, examples=20)
 
 
