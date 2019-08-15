@@ -1,11 +1,24 @@
 import numpy as np
 
+# TODO: Change derivative calculation for last layer
+# TODO: Check the derivatives for all layers
+# TODO: Add a method that computes the cost on the validation set, print this
+#  cost every epoch
+# TODO: Graph cost vs epoch for various hyperparameters.
+# TODO: Store all trained models
+# TODO: Stop training if drop in cost is less than some epsilon (prolonged)
+#  use a "increasing patience level" method to change epsilon.
+# TODO: Add a test suite which will test against the test data.
+#  it should firstly see how many predictions are correct, and also compute
+#  the total cost in prediction.
+
 
 class NeuralNetwork:
-	def __init__(self, ns, alpha=0.01):
+	def __init__(self, ns, alpha=0.01, eta=0.01):
 		self.l = len(ns)  # Number of layers
 		self.ns = ns  # Number of neurons in each layer
 		self.alpha = alpha  # Parameter for LReLU
+		self.eta = eta  # Learning rate
 
 		# Randomly initialize thetas with a normal distribution with mean 0
 		# and standard deviation as the reciprocal of the number of inputs
@@ -19,6 +32,24 @@ class NeuralNetwork:
 	def predict(self, x):
 		# Our prediction is simply the activations of the output (last) layer.
 		return self.get_activations(x)[-1]
+
+	def train(self, xs, ys, epochs=10, batch_size=20):
+		# We generate all the indices for the training data.
+		# We will shuffle these indices each epoch to randomly order the data.
+		# This is more efficient than zipping and shuffling the arrays.
+		perm = np.arange(len(xs))
+
+		for i in range(epochs):
+			np.random.shuffle(perm)
+
+			# We split the training data in batches, each of size batch_size.
+			for j in range(0, len(xs) - batch_size, batch_size):
+				batch = zip(xs[j:j + batch_size], ys[j:j + batch_size])
+
+				# Each batch is then used to train the network
+				self.train_batch(list(batch))
+
+			print(f'Epoch {i}: ')
 
 	def get_activations(self, x):
 		# Validate the size of the input.
@@ -51,50 +82,49 @@ class NeuralNetwork:
 
 		return activations
 
-	def train(self, xs, ys):
+	def train_batch(self, batch):
 		deltas = [
 			np.zeros((self.ns[i], self.ns[i - 1] + 1))
 			for i in range(1, self.l)
 		]
 
 		# Iterate over all training sets
-		for x, y in zip(xs, ys):
+		for x, y in batch:
 			# Activations for the current training set
 			activations = self.get_activations(x)
 
 			# The error in the prediction is simply the difference
 			# between the predicted and actual outputs.
 			errors = [np.array([0]) for _ in range(self.l)]
-			errors[-1] = activations[-1] - y
+			errors[-1] = NeuralNetwork.compute_error(activations[-1], y)
+			# output_derivative =
+			# errors[-2] = np.dot(self.thetas[-1].transpose(), errors[-1]) * self.derivative(a)
 
 			# Loop over all hidden layers, backwards
 			for i in range(self.l - 2, 0, -1):
 				# Assign some variables to make the following code cleaner.
-				a, e = activations[i], errors[i + 1]
+				a, e = activations[i].copy(), errors[i + 1].copy()
 				a_t = a.reshape((-1, 1)).transpose()
 				theta_t = self.thetas[i].transpose()
+
+				# We discard the error in the bias unit if it is present,
+				# opting to only adjust its theta.
+				e = e[:-1] if theta_t.shape[1] != e.shape[0] else e
 
 				# The error for the layer is the matrix product of the thetas
 				# for that layer and the errors for the next layer, times
 				# the derivative of the activation function: (a * (1 - a))
-				# Also, we discard the error in the bias unit if it is present,
-				# opting to only adjust its theta.
-				if theta_t.shape[1] != e.shape[0]:
-					errors[i] = np.dot(theta_t, e[:-1]) * self.derivative(a)
-					deltas[i] += np.multiply(e[:-1].reshape((-1, 1)), a_t)
-				else:
-					errors[i] = np.dot(theta_t, e) * self.derivative(a)
-					deltas[i] += np.multiply(e.reshape((-1, 1)), a_t)
+				errors[i] = np.dot(theta_t, e) * self.derivative(a)
+				deltas[i] += np.multiply(e.reshape((-1, 1)), a_t)
 
-			# Delta, the change in the parameters as indicated by this set,
-			# is given by the matrix product of the errors of the next
-			# layer and the transpose of the current activations.
-			# This value is added so as to 'accumulate' it over the entire
-			# training database.
-			# deltas[i] += np.multiply(e.reshape((-1, 1)), a_t)
+		# Delta, the change in the parameters as indicated by this set,
+		# is given by the matrix product of the errors of the next
+		# layer and the transpose of the current activations.
+		# This value is added so as to 'accumulate' it over the entire
+		# training database.
+		# deltas[i] += np.multiply(e.reshape((-1, 1)), a_t)
 
-		# noinspection PyTypeChecker
-		change = [d / len(xs) for d in deltas]
+		change = [d / len(batch) for d in deltas]
 		# print('Change shape: ', [a.shape for a in change])
 		# print('Deltas shape: ', [d.shape for d in deltas])
 		for i in range(self.l - 1):
@@ -111,6 +141,16 @@ class NeuralNetwork:
 		# f'(z) = {    1,   z >= 0 which implies f(z) >= 0
 		#         {alpha,    z < 0 which implies f(z) < 0
 		return np.where(a >= 0, 1, self.alpha)
+
+	@staticmethod
+	def compute_error(prediction, y):
+		# Our chosen error function is the "Cross Entropy Loss" function.
+		# When x -> 0: ln x -> -Inf and
+		# when x = 1: ln x = 0.
+		return -np.log(prediction) if y else -np.log(1 - prediction)
+
+	def output_derivative(self):
+		return
 
 	def validate_input(self, x):
 		if len(x) != self.ns[0]:
