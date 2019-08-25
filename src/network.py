@@ -1,8 +1,6 @@
 import numpy as np
 
 
-# TODO: Change derivative calculation for last layer
-# TODO: Check the derivatives for all layers
 # TODO: Add a method that computes the cost on the validation set, print this
 #  cost every epoch
 # TODO: Graph cost vs epoch for various hyper parameters.
@@ -41,6 +39,9 @@ class NeuralNetwork:
 		# Hyper Parameters
 		self.eta = eta  # Learning rate
 		self.lmbda = lmbda  # Coefficient of Regularization
+		# Note: The coefficient is called "lmbda" as "lambda" is a keyword.
+
+		# Activation Function Object
 		self.act_fn = LeakyReLU(alpha)  # Parameter for LReLU
 
 		# Randomly initialize thetas (weights) with a normal distribution
@@ -52,8 +53,8 @@ class NeuralNetwork:
 		]
 
 		# Similarly, initialize the biases with a distribution of mean zero
-		# and std deviation and/or variance = 1
-		self.biases = [np.random.randn(x, 1) for x in ns[1:]]
+		# and standard deviation and variance 1
+		self.biases = [np.random.randn(x) for x in ns[1:]]
 
 	def predict(self, x):
 		# Our prediction is simply the activations of the output (last) layer.
@@ -76,7 +77,7 @@ class NeuralNetwork:
 				self.train_batch(batch)
 
 			# After each epoch, optionally print progress
-			print(f'Epoch {i}: ')
+			# print(f'Epoch {i}: ')
 
 	def get_activations(self, x):
 		# Validate the size of the input.
@@ -84,7 +85,7 @@ class NeuralNetwork:
 
 		# We scale down the input to be in [0, 1].
 		# Also, we add a 1 to the end to account for the bias.
-		activations = [np.append(x / 255, 1)]
+		activations = [x / 255]
 
 		# Iterate over each layer, excluding the output layer
 		for theta, bias in zip(self.thetas[:-1], self.biases[:-1]):
@@ -111,56 +112,59 @@ class NeuralNetwork:
 			np.zeros((self.ns[i], self.ns[i - 1]))
 			for i in range(1, self.l)
 		]
-		delta_biases = [np.zeros((x, 1)) for x in self.ns[1:]]
+		delta_biases = [np.zeros((x,)) for x in self.ns[1:]]
 
-		# Iterate over all training sets
+		# Iterate over all examples in the batch
 		for x, y in batch:
-			# Activations for the current training set
+			# Activations for the current training example
 			activations = self.get_activations(x)
 
 			# We can trivially compute the bias and weight derivatives
 			# for the last layer with the help of y and the prediction.
 			# These formulae are derived by applying the chain rule to
 			# the softmax (activation) and the log loss (error) functions.
-			difference = activations[-1] - y
-			delta_biases[-1] = difference
-			delta_thetas[-1] = np.dot(difference, activations[-1].transpose())
+			difference = np.array(activations[-1] - y)
+			delta_biases[-1] += difference
+			delta_thetas[-1] += np.dot(
+				difference.reshape((-1, 1)),
+				activations[-2].reshape(1, -1)
+			)
 
 			# The derivatives array stores the derivatives of the error function
 			# with respect to the activations.
 			# This array is used for backpropagation.
-			derivatives = [np.zeros((x, 1)) for x in self.ns[1:-1]]
-			derivatives[-1] = np.dot(self.thetas[-1].transpose(), difference)
+			derivatives = [np.zeros((x,)) for x in self.ns]
+			# Derivative of the second last layer
+			# i.e, layer before output layer
+			# Change to [-2] or in init make self.ns[1:-1] since
+			# input and output layers won't have derivatives.
+			derivatives[-2] = np.dot(self.thetas[-1].transpose(), difference)
 
 			# Loop over all hidden layers, backwards
-			for i in range(self.l - 2, 0, -1):
+			for i in range(self.l - 3, -1, -1):
 				# Assign some variables to make the following code cleaner.
-				a, e = activations[i], derivatives[i + 1]
-				a_t = a.reshape((-1, 1)).transpose()
+				a_t = activations[i].reshape((1, -1))
 				theta_t = self.thetas[i].transpose()
 
-				# We discard the error in the bias unit if it is present,
-				# opting to only adjust its theta.
-				# e = e[:-1] if theta_t.shape[1] != e.shape[0] else e
+				# We compute a term called the "error".
+				# This can be considered similar to the "difference" term above
+				# with the derivative of the activation function multiplied.
+				error = derivatives[i + 1] * self.act_fn.d(activations[i + 1])
+				e1 = error.reshape((-1, 1))
 
-				# The error for the layer is the matrix product of the thetas
-				# for that layer and the errors for the next layer, times
-				# the derivative of the activation function: (a * (1 - a))
-				# errors[i] = np.dot(theta_t, e) * self.derivative(a)
-				# delta_thetas[i] += np.multiply(e.reshape((-1, 1)), a_t)
+				# The following formulae used to compute the derivatives are
+				# derived using the chain rule.
+				# Our goal is to compute the derivatives of the error function
+				# with respect to each parameter, to tweak them as necessary.
+				# These values are added so as to 'accumulate' them
+				# over the batch we are currently training on.
+				delta_biases[i] += error
+				delta_thetas[i] += np.dot(e1, a_t)
+				derivatives[i] = np.dot(theta_t, error)
 
-		# Delta, the change in the parameters as indicated by this set,
-		# is given by the matrix product of the errors of the next
-		# layer and the transpose of the current activations.
-		# This value is added so as to 'accumulate' it over the entire
-		# training database.
-		# deltas[i] += np.multiply(e.reshape((-1, 1)), a_t)
-
-		change = [d / len(batch) for d in delta_thetas]
-		# print('Change shape: ', [a.shape for a in change])
-		# print('Deltas shape: ', [d.shape for d in deltas])
 		for i in range(self.l - 1):
-			self.thetas[i] -= change[i]
+			self.thetas[i] -= delta_thetas[i] / len(batch)
+			self.biases[i] -= delta_biases[i] / len(batch)
 
 	def validate_input(self, x):
 		if len(x) != self.ns[0]:
@@ -188,7 +192,7 @@ def softmax(z):
 
 
 def main():
-	n = NeuralNetwork([784, 1024, 10])
+	n = NeuralNetwork([784, 16, 10])
 	# test_one(n, 0, examples=10)
 	# train_all(n, examples=1000, cycles=5)
 	# test_all(n, examples=20)
@@ -196,61 +200,8 @@ def main():
 	test_all(n, examples=20)
 
 
-# test_one(n, i=0, examples=10)
-
-# train_one(n, i=0, examples=1000, cycles=1)
-# test_one(n, i=0, examples=10)
-
-# train_one(n, i=1, examples=1000)
-# test_one(n, i=0, examples=10)
-# test_one(n, i=1, examples=10)
-
-# train_one(n, i=0, examples=100, cycles=1)
-# test_one(n, i=0, examples=10)
-# test_one(n, i=1, examples=10)
-
-
-#
-# num = 1000
-# ims0 = ims.copy()
-# with open('training_data\\data1', 'rb') as f:
-# 	ims = [int(x) for x in f.read(28 * 28 * num)]
-#
-# ims = np.array(ims).reshape((num, 28 * 28))
-# y0 = y.copy()
-# y = np.array([0, 1] + [0] * 8)
-#
-# before = after.copy()
-# for i in range(1):
-# 	n.train(ims, [y] * num)
-# after = n.predict(im)[-1]
-#
-# print()
-# print('Prediction before training:', before)
-# print('Prediction after training: ', after)
-# print()
-# print('Offset before training: ', y0 - before)
-# print('Offset after training: ', y0 - after)
-# print()
-# print('Squared mean error before: ', sum((y0 - before) ** 2))
-# print('Squared mean error after: ', sum((y0 - after) ** 2))
-#
-# n.train(ims0, [y0] * num)
-# after = n.predict(im)[-1]
-#
-# print()
-# print('Prediction before training:', before)
-# print('Prediction after training: ', after)
-# print()
-# print('Offset before training: ', y0 - before)
-# print('Offset after training: ', y0 - after)
-# print()
-# print('Squared mean error before: ', sum((y0 - before) ** 2))
-# print('Squared mean error after: ', sum((y0 - after) ** 2))
-
-
 def get_images(digit, number):
-	with open(f'training_data\\data{digit}', 'rb') as f:
+	with open(f'..\\data\\temp_data\\data{digit}', 'rb') as f:
 		ims = [int(x) for x in f.read(28 * 28 * number)]
 	return np.array(ims).reshape((number, 28 * 28))
 
@@ -302,57 +253,3 @@ def test_all(n, examples=1):
 
 
 main()
-
-
-# def train_batch(self, batch):
-# 	delta_thetas = [
-# 		np.zeros((self.ns[i], self.ns[i - 1]))
-# 		for i in range(1, self.l)
-# 	]
-# 	delta_biases = [np.zeros((x, 1)) for x in self.ns[1:]]
-#
-# 	# Iterate over all training sets
-# 	for x, y in batch:
-# 		# Activations for the current training set
-# 		activations = self.get_activations(x)
-#
-# 		# The error in the prediction is simply the difference
-# 		# between the predicted and actual outputs.
-# 		errors = [np.zeros((x, 1)) for x in self.ns[1:]]
-# 		errors[-1] = log_loss(activations[-1], y)
-# 		difference = activations[-1] - y
-# 		delta_thetas[-1] = difference * activations[-1].transpose()
-# 		delta_biases[-1] = difference
-# 		# output_derivative =
-# 		# errors[-2] = np.dot(self.thetas[-1].transpose(), errors[-1]) *
-# 		# self.derivative(a)
-#
-# 		# Loop over all hidden layers, backwards
-# 		for i in range(self.l - 2, 0, -1):
-# 			# Assign some variables to make the following code cleaner.
-# 			a, e = activations[i].copy(), errors[i + 1].copy()
-# 			a_t = a.reshape((-1, 1)).transpose()
-# 			theta_t = self.thetas[i].transpose()
-#
-# 			# We discard the error in the bias unit if it is present,
-# 			# opting to only adjust its theta.
-# 			e = e[:-1] if theta_t.shape[1] != e.shape[0] else e
-#
-# 			# The error for the layer is the matrix product of the thetas
-# 			# for that layer and the errors for the next layer, times
-# 			# the derivative of the activation function: (a * (1 - a))
-# 			errors[i] = np.dot(theta_t, e) * self.derivative(a)
-# 			delta_thetas[i] += np.multiply(e.reshape((-1, 1)), a_t)
-#
-# 	# Delta, the change in the parameters as indicated by this set,
-# 	# is given by the matrix product of the errors of the next
-# 	# layer and the transpose of the current activations.
-# 	# This value is added so as to 'accumulate' it over the entire
-# 	# training database.
-# 	# deltas[i] += np.multiply(e.reshape((-1, 1)), a_t)
-#
-# 	change = [d / len(batch) for d in delta_thetas]
-# 	# print('Change shape: ', [a.shape for a in change])
-# 	# print('Deltas shape: ', [d.shape for d in deltas])
-# 	for i in range(self.l - 1):
-# 		self.thetas[i] -= change[i]
