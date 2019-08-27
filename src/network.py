@@ -1,9 +1,10 @@
+import gzip
+import _pickle as pickle
+
 import numpy as np
 
 
-# TODO: Add a method that computes the cost on the validation set, print this
-#  cost every epoch
-# TODO: Graph cost vs epoch for various hyper parameters.
+# TODO: Graph accuracy vs epoch for various hyper parameters.
 # TODO: Store all trained models
 # TODO: Stop training if drop in cost is less than some epsilon (prolonged)
 #  use a "increasing patience level" method to change epsilon.
@@ -31,7 +32,7 @@ class LeakyReLU:
 
 
 class NeuralNetwork:
-	def __init__(self, ns, eta=0.01, lmbda=0.1, alpha=0.01, ):
+	def __init__(self, ns, eta=0.04, lmbda=0.15, alpha=0.02):
 		# Network Structure
 		self.l = len(ns)  # Number of layers
 		self.ns = ns  # Number of neurons in each layer
@@ -60,24 +61,37 @@ class NeuralNetwork:
 		# Our prediction is simply the activations of the output (last) layer.
 		return self.get_activations(x)[-1]
 
-	def train(self, xs, ys, epochs=10, batch_size=20):
+	def train(self, data, validation_data=None, epochs=100, batch_size=20):
 		# We generate all the indices for the training data.
 		# We will shuffle these indices each epoch to randomly order the data.
 		# This is more efficient than zipping and shuffling the arrays.
-		perm = np.arange(len(xs))
+		perm = np.arange(len(data))
+		n_validation = len(validation_data)
+		if validation_data:
+			correct = self.validate(validation_data)
+			print(f'Initial: {correct} / {n_validation}')
 
 		for i in range(epochs):
 			np.random.shuffle(perm)
 
 			# We split the training data in batches, each of size batch_size.
-			for j in range(0, len(xs), batch_size):
-				batch = list(zip(xs[j:j + batch_size], ys[j:j + batch_size]))
+			for j in range(0, len(data), batch_size):
+				batch = data[j:j + batch_size]
 
 				# Each batch is then used to train the network
 				self.train_batch(batch)
 
 			# After each epoch, optionally print progress
-			# print(f'Epoch {i}: ')
+			if validation_data:
+				correct = self.validate(validation_data)
+				print(f'Epoch {i}: {correct} / {n_validation}')
+
+	def validate(self, validation_data):
+		correct = 0
+		for x, y in validation_data:
+			if np.argmax(y) == np.argmax(self.predict(x)):
+				correct += 1
+		return correct
 
 	def get_activations(self, x):
 		# Validate the size of the input.
@@ -85,7 +99,7 @@ class NeuralNetwork:
 
 		# We scale down the input to be in [0, 1].
 		# Also, we add a 1 to the end to account for the bias.
-		activations = [x / 255]
+		activations = [x]
 
 		# Iterate over each layer, excluding the output layer
 		for theta, bias in zip(self.thetas[:-1], self.biases[:-1]):
@@ -130,7 +144,8 @@ class NeuralNetwork:
 				activations[-2].reshape(1, -1)
 			)
 
-			# The derivatives array stores the derivatives of the error function
+			# The derivatives array stores the derivatives of the error
+			# function
 			# with respect to the activations.
 			# This array is used for backpropagation.
 			derivatives = [np.zeros((x,)) for x in self.ns]
@@ -162,9 +177,14 @@ class NeuralNetwork:
 				delta_thetas[i] += np.dot(e1, a_t)
 				derivatives[i] = np.dot(theta_t, error)
 
+		scale = self.eta / len(batch)
 		for i in range(self.l - 1):
-			self.thetas[i] -= delta_thetas[i] / len(batch)
-			self.biases[i] -= delta_biases[i] / len(batch)
+			# L2 regularization term
+			self.thetas[i] -= scale * self.lmbda * self.thetas[i]
+
+			# Updates
+			self.thetas[i] -= scale * delta_thetas[i]
+			self.biases[i] -= scale * delta_biases[i]
 
 	def validate_input(self, x):
 		if len(x) != self.ns[0]:
@@ -191,65 +211,36 @@ def softmax(z):
 	return np.nan_to_num(z / z_sum)
 
 
+def load_data():
+	# The _py3 version of the dataset is a redumped version for Python 3
+	# which doesn't use Python 2's latin1 encoding
+	with gzip.open('../data/mnist_py3.pkl.gz', 'rb') as f:
+		data = pickle.load(f)
+
+	processed_data = []
+	# Data contains 3 "sections": training, validation, and test
+	# containing 50K, 10K, and 10K examples each.
+	# We return this data as a list of tuples containing input-output pairs
+	for section in data:
+		# We reshape the inputs, and convert the outputs into
+		# "one-hot encoded vectors" which is just the output vector.
+		processed_data.append(list(zip(
+			[x.reshape((784,)) for x in section[0]],
+			[get_expected_y(y) for y in section[1]]
+		)))
+	return processed_data
+
+
 def main():
-	n = NeuralNetwork([784, 16, 10])
-	# test_one(n, 0, examples=10)
-	# train_all(n, examples=1000, cycles=5)
-	# test_all(n, examples=20)
-	train_all(n, examples=100, cycles=50)
-	test_all(n, examples=20)
-
-
-def get_images(digit, number):
-	with open(f'..\\data\\temp_data\\data{digit}', 'rb') as f:
-		ims = [int(x) for x in f.read(28 * 28 * number)]
-	return np.array(ims).reshape((number, 28 * 28))
+	n = NeuralNetwork([784, 256, 10])
+	training, validation, test = load_data()
+	n.train(training[:5000], validation[:1000])
 
 
 def get_expected_y(digit):
 	y = np.array([0] * 10)
 	y[digit] = 1
 	return y
-
-
-def train_one(n, i, examples=1000, cycles=1):
-	ims = get_images(i, examples)
-	y = get_expected_y(i)
-
-	for j in range(cycles):
-		n.train(ims, [y] * examples)
-
-
-def train_all(n, examples=1000, cycles=1):
-	ims, ys = [], []
-
-	for i in range(10):
-		ims.extend(get_images(i, examples))
-		ys.extend([get_expected_y(i)] * examples)
-
-	for i in range(cycles):
-		n.train(np.array(ims), np.array(ys))
-
-
-def test_one(n, i, examples=1):
-	ims = get_images(i, examples)
-	y = get_expected_y(i)
-
-	errors = np.zeros((examples,))
-	predictions = np.zeros((examples, 10))
-
-	for j in range(examples):
-		predictions[j] = n.predict(ims[j])
-		errors[j] = np.sum((y - predictions[j]) ** 2)
-
-	print(f"\nRan tests for digit {i}, {examples} examples.")
-	print("Average prediction:", predictions.mean(0))
-	print("Average squared mean error:", errors.mean(), '\n')
-
-
-def test_all(n, examples=1):
-	for i in range(10):
-		test_one(n, i, examples)
 
 
 main()
