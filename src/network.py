@@ -1,7 +1,8 @@
+import pickle
 import gzip
-import _pickle as pickle
 
 import numpy as np
+from matplotlib import pyplot as plt
 
 
 # TODO: Graph accuracy vs epoch for various hyper parameters.
@@ -57,16 +58,22 @@ class NeuralNetwork:
 		# and standard deviation and variance 1
 		self.biases = [np.random.randn(x) for x in ns[1:]]
 
+		# We use this performance variable to keep a track of how
+		# the network is performing. We will use it plot graph(s) between
+		# the number of correct predictions on the validation data and epochs.
+		self.performance = []
+
 	def predict(self, x):
 		# Our prediction is simply the activations of the output (last) layer.
 		return self.get_activations(x)[-1]
 
-	def train(self, data, validation_data=None, epochs=100, batch_size=20):
+	def train(self, data, validation_data=None, epochs=20, batch_size=20):
 		# We generate all the indices for the training data.
 		# We will shuffle these indices each epoch to randomly order the data.
 		# This is more efficient than zipping and shuffling the arrays.
 		perm = np.arange(len(data))
 		n_validation = len(validation_data)
+		self.performance = []
 		if validation_data:
 			correct = self.validate(validation_data)
 			print(f'Initial: {correct} / {n_validation}')
@@ -84,7 +91,17 @@ class NeuralNetwork:
 			# After each epoch, optionally print progress
 			if validation_data:
 				correct = self.validate(validation_data)
+				self.performance.append(100 * correct / n_validation)
 				print(f'Epoch {i}: {correct} / {n_validation}')
+
+	def plot(self):
+		if not self.performance:
+			return
+		plt.figure()
+		plt.plot(range(len(self.performance)), self.performance, 'r')
+		plt.xlabel('Number of Epochs')
+		plt.ylabel('Prediction Accuracy')
+		plt.show()
 
 	def validate(self, validation_data):
 		correct = 0
@@ -180,7 +197,7 @@ class NeuralNetwork:
 		scale = self.eta / len(batch)
 		for i in range(self.l - 1):
 			# L2 regularization term
-			self.thetas[i] -= scale * self.lmbda * self.thetas[i]
+			self.thetas[i] *= 1 - (scale * self.lmbda)
 
 			# Updates
 			self.thetas[i] -= scale * delta_thetas[i]
@@ -199,7 +216,7 @@ def log_loss(y, a):
 	# This is also called the "Cross Entropy Loss" and is computed as:
 	# f(a) = -y * log(a) - (1 - y) * log(1 - a)
 	# i.e, -log(a) if y is 1, and -log(1 - a) if y is 0.
-	return np.where(y, -np.log(a), -np.log(1 - a))
+	return np.where(y, -np.log(a), -np.log(1 - a)).sum()
 
 
 def softmax(z):
@@ -235,6 +252,7 @@ def main():
 	n = NeuralNetwork([784, 256, 10])
 	training, validation, test = load_data()
 	n.train(training[:5000], validation[:1000])
+	n.plot()
 
 
 def get_expected_y(digit):
