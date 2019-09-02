@@ -5,7 +5,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-# TODO: Graph accuracy vs epoch for various hyper parameters.
 # TODO: Store all trained models
 # TODO: Stop training if drop in cost is less than some epsilon (prolonged)
 #  use a "increasing patience level" method to change epsilon.
@@ -72,8 +71,8 @@ class NeuralNetwork:
 		# We will shuffle these indices each epoch to randomly order the data.
 		# This is more efficient than zipping and shuffling the arrays.
 		perm = np.arange(len(data))
-		n_validation = len(validation_data)
 		self.performance = []
+		n_validation = len(validation_data)
 		if validation_data:
 			correct = self.validate(validation_data)
 			print(f'Initial: {correct} / {n_validation}')
@@ -97,10 +96,14 @@ class NeuralNetwork:
 	def plot(self):
 		if not self.performance:
 			return
+
 		plt.figure()
-		plt.plot(range(len(self.performance)), self.performance, 'r')
+		plt.plot(
+			range(1, len(self.performance) + 1),
+			self.performance, 'r'
+		)
 		plt.xlabel('Number of Epochs')
-		plt.ylabel('Prediction Accuracy')
+		plt.ylabel('Prediction Accuracy (%)')
 		plt.show()
 
 	def validate(self, validation_data):
@@ -123,8 +126,10 @@ class NeuralNetwork:
 			# The input to this layer is the matrix product of the weights
 			# associated with this layer and the activations of the previous
 			# layer plus the biases.
-			z = np.array(np.dot(theta, activations[-1]) + bias,
-				dtype='float64')
+			z = np.array(
+				np.dot(theta, activations[-1]) + bias,
+				dtype='float64'
+			)
 
 			# Apply the activation (LReLU) function to get the activations
 			# for this layer, and add a 1 to the end for the bias.
@@ -182,7 +187,7 @@ class NeuralNetwork:
 				# This can be considered similar to the "difference" term above
 				# with the derivative of the activation function multiplied.
 				error = derivatives[i + 1] * self.act_fn.d(activations[i + 1])
-				e1 = error.reshape((-1, 1))
+				error_v = error.reshape((-1, 1))
 
 				# The following formulae used to compute the derivatives are
 				# derived using the chain rule.
@@ -191,17 +196,17 @@ class NeuralNetwork:
 				# These values are added so as to 'accumulate' them
 				# over the batch we are currently training on.
 				delta_biases[i] += error
-				delta_thetas[i] += np.dot(e1, a_t)
+				delta_thetas[i] += np.dot(error_v, a_t)
 				derivatives[i] = np.dot(theta_t, error)
 
-		scale = self.eta / len(batch)
+		scale_factor = self.eta / len(batch)
 		for i in range(self.l - 1):
 			# L2 regularization term
-			self.thetas[i] *= 1 - (scale * self.lmbda)
+			self.thetas[i] *= 1 - (scale_factor * self.lmbda)
 
 			# Updates
-			self.thetas[i] -= scale * delta_thetas[i]
-			self.biases[i] -= scale * delta_biases[i]
+			self.thetas[i] -= scale_factor * delta_thetas[i]
+			self.biases[i] -= scale_factor * delta_biases[i]
 
 	def validate_input(self, x):
 		if len(x) != self.ns[0]:
