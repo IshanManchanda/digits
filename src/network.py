@@ -1,5 +1,6 @@
-import pickle
 import gzip
+import json
+import pickle
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -105,6 +106,37 @@ class NeuralNetwork:
 		plt.xlabel('Number of Epochs')
 		plt.ylabel('Prediction Accuracy (%)')
 		plt.show()
+
+	def save(self, filename):
+		# This function will save all parameters of our network.
+		# We use this elaborate setup instead of simply pickling and dumping
+		# the class so that if we change the architecture of our class,
+		# we are still able to use this data. Unpickling and loading will not
+		# work well in that case.
+		data = {
+			'ns': self.ns,
+			'eta': self.eta,
+			'lmbda': self.lmbda,
+			'alpha': self.act_fn.alpha,
+			'thetas': [t.tolist() for t in self.thetas],
+			'biases': [b.tolist() for b in self.biases],
+			'performance': self.performance
+		}
+		with open(filename, 'w') as f:
+			json.dump(data, f)
+
+	@staticmethod
+	def load(filename):
+		with open(filename) as f:
+			data = json.load(f)
+
+		n = NeuralNetwork(
+			data['ns'], data['eta'], data['lmbda'], data['alpha']
+		)
+		n.thetas = [np.array(t) for t in data['thetas']]
+		n.biases = [np.array(b) for b in data['biases']]
+		n.performance = data['performance']
+		return n
 
 	def validate(self, validation_data):
 		correct = 0
