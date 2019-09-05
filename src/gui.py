@@ -1,13 +1,18 @@
 import tkinter as tk
 
+import numpy as np
+
+from network import NeuralNetwork, draw_digit
+
 desc = 'Draw a single digit in the canvas.\n' + \
        'For best output, try to ensure it is centered\n' + \
        'in the frame and nearly fills it.'
 
 
 class InputGUI:
-	def __init__(self, root: tk.Tk):
+	def __init__(self, root, n=None):
 		self.root = root
+		self.n = n
 		self.dots = []
 		self.scale = 10
 		self.size = 28 * self.scale
@@ -47,25 +52,52 @@ class InputGUI:
 		self.dots = []
 
 	def predict(self):
-		print(self.canvas.find_all())
 		print(len(self.dots))
 		print(self.dots)
+		data = process_dots(self.dots, self.scale)
+		draw_digit(data)
+
+		if self.n:
+			self.n.predict(process_dots(self.dots, self.scale))
 
 	def draw(self, event):
 		x, y = event.x, event.y
 		self.dots.append((x, y))
 		self.canvas.create_oval(
-			x - self.scale / 2, y - self.scale / 2,
-			x + self.scale / 2, y + self.scale / 2,
-			fill='black'
+			x - self.scale * 1, y - self.scale * 1,
+			x + self.scale * 1, y + self.scale * 1,
+			fill='#333333'
 		)
 
 
-def main():
+def gui():
 	root = tk.Tk()
-	gui = InputGUI(root)
+	InputGUI(root)
 	root.mainloop()
 
 
+def process_dots(dots, scale):
+	data = np.zeros((28, 28))
+
+	for dot in dots:
+		x, y = dot[0] // scale, dot[1] // scale
+		data[y][x] += 4
+
+		# for x1, y1 in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+		# 	data[x1, y1] += 2
+
+		# for x1, y1 in (
+		# 	(x - 1, y - 1), (x - 1, y + 1),
+		# 	(x + 1, y - 1), (x + 1, y + 1)):
+		# 	data[x1, y1] += 1
+		# data[x - 1, y - 1] += 1
+		# data[x - 1, y + 1] += 1
+		# data[x + 1, y - 1] += 1
+		# data[x + 1, y + 1] += 1
+
+	data *= 255 / 16
+	return data
+
+
 if __name__ == '__main__':
-	main()
+	gui()

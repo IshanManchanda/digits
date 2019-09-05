@@ -3,6 +3,7 @@ import json
 import pickle
 
 import numpy as np
+from PIL import Image
 from matplotlib import pyplot as plt
 
 
@@ -288,8 +289,17 @@ def load_data():
 def main():
 	n = NeuralNetwork([784, 256, 10])
 	training, validation, test = load_data()
-	n.train(training[:5000], validation[:1000])
+	n.train(training[:1000], validation[:500])
 	n.plot()
+
+
+# for i in range(10):
+# 	draw_digit(training[i][0])
+
+
+def draw_digit(image):
+	arr = np.array(image).reshape((28, 28)) * 256
+	Image.fromarray(arr).resize((256, 256), Image.ANTIALIAS).show()
 
 
 def get_expected_y(digit):
@@ -298,4 +308,5 @@ def get_expected_y(digit):
 	return y
 
 
-main()
+if __name__ == '__main__':
+	main()
