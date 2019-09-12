@@ -7,9 +7,6 @@ from PIL import Image
 from matplotlib import pyplot as plt
 
 
-# TODO: Store all trained models
-# TODO: Stop training if drop in cost is less than some epsilon (prolonged)
-#  use a "increasing patience level" method to change epsilon.
 # TODO: Add a test suite which will test against the test data.
 #  it should firstly see how many predictions are correct, and also compute
 #  the total cost in prediction.
@@ -34,7 +31,8 @@ class LeakyReLU:
 
 
 class NeuralNetwork:
-	def __init__(self, ns, eta=0.04, lmbda=0.15, alpha=0.02):
+	def __init__(self, ns, eta=0.5, lmbda=0, alpha=0.05):
+		print(f'ns: {ns}, eta: {eta}, lambda: {lmbda}, alpha: {alpha}')
 		# Network Structure
 		self.l = len(ns)  # Number of layers
 		self.ns = ns  # Number of neurons in each layer
@@ -68,14 +66,14 @@ class NeuralNetwork:
 		# Our prediction is simply the activations of the output (last) layer.
 		return self.get_activations(x)[-1]
 
-	def train(self, data, validation_data=None, epochs=20, batch_size=20):
+	def train(self, data, validation_data=None, epochs=10, batch_size=20):
 		# We generate all the indices for the training data.
 		# We will shuffle these indices each epoch to randomly order the data.
 		# This is more efficient than zipping and shuffling the arrays.
 		perm = np.arange(len(data))
 		self.performance = []
 		n_validation = len(validation_data)
-		if validation_data:
+		if validation_data is not None:
 			correct = self.validate(validation_data)
 			print(f'Initial: {correct} / {n_validation}')
 
@@ -84,18 +82,21 @@ class NeuralNetwork:
 
 			# We split the training data in batches, each of size batch_size.
 			for j in range(0, len(data), batch_size):
-				batch = data[j:j + batch_size]
+				# From the shuffled indices, we select a range
+				# and pick all the examples in that range.
+				batch = [data[x] for x in perm[j:j + batch_size]]
 
 				# Each batch is then used to train the network
 				self.train_batch(batch)
 
 			# After each epoch, optionally print progress
-			if validation_data:
+			if validation_data is not None:
 				correct = self.validate(validation_data)
-				self.performance.append(100 * correct / n_validation)
-				print(f'Epoch {i}: {correct} / {n_validation}')
+				percentage = 100 * correct / n_validation
+				self.performance.append(percentage)
+				print(f'Epoch {i}: {correct} / {n_validation} ({percentage}%)')
 
-	def plot(self):
+	def plot(self, filename=None):
 		if not self.performance:
 			return
 
@@ -104,8 +105,14 @@ class NeuralNetwork:
 			range(1, len(self.performance) + 1),
 			self.performance, 'r'
 		)
+		plt.title(
+			f'ns: {self.ns}, eta: {self.eta}, '
+			f'lambda: {self.lmbda}, alpha: {self.act_fn.alpha}.')
 		plt.xlabel('Number of Epochs')
 		plt.ylabel('Prediction Accuracy (%)')
+		if filename:
+			plt.tight_layout()
+			plt.savefig(filename)
 		plt.show()
 
 	def save(self, filename):
@@ -119,9 +126,9 @@ class NeuralNetwork:
 			'eta': self.eta,
 			'lmbda': self.lmbda,
 			'alpha': self.act_fn.alpha,
+			'performance': self.performance,
 			'thetas': [t.tolist() for t in self.thetas],
-			'biases': [b.tolist() for b in self.biases],
-			'performance': self.performance
+			'biases': [b.tolist() for b in self.biases]
 		}
 		with open(filename, 'w') as f:
 			json.dump(data, f)
@@ -287,14 +294,13 @@ def load_data():
 
 
 def main():
-	n = NeuralNetwork([784, 256, 10])
+	# n = NeuralNetwork([784, 256, 10])
 	training, validation, test = load_data()
-	n.train(training[:1000], validation[:500])
-	n.plot()
+	# n.train(training[:1000], validation[:500])
+	# n.plot()
 
-
-# for i in range(10):
-# 	draw_digit(training[i][0])
+	for i in range(10):
+		draw_digit(training[i][0])
 
 
 def draw_digit(image):
