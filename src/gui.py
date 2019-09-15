@@ -2,9 +2,7 @@ import tkinter as tk
 
 import numpy as np
 
-from network import draw_digit
-from preprocessor import dots_to_image, dots_to_image2, render_digit, \
-	deskew_image
+from preprocessor import deskew_image, dots_to_image, render_digit
 
 desc = 'Draw a single digit in the canvas.\n' + \
        'For best output, try to ensure it is centered\n' + \
@@ -16,8 +14,8 @@ class InputGUI:
 		self.root = root
 		self.n = n
 		self.dots = []
-		self.scale = 10
-		self.size = 27 * self.scale
+		self.scale = 15
+		self.size = 28 * 10 - 1
 
 		self.root.minsize(700, 400)
 		self.root.title("pyDigits")
@@ -55,11 +53,16 @@ class InputGUI:
 
 	def predict(self):
 		print('Number of dots:', len(self.dots))
-		data = dots_to_image2(self.dots, self.scale)
-		render_digit(data * 255)
+		data = dots_to_image(self.dots, self.scale)
+		render_digit(data)
 
 		deskewed = deskew_image(data)
 		render_digit(deskewed)
+		print(data)
+		print(data.mean(), data.min())
+		print("deskewed")
+		print(deskewed)
+		print(deskewed.mean(), deskewed.min())
 
 		if self.n:
 			prediction = self.n.predict(data)
@@ -68,12 +71,12 @@ class InputGUI:
 
 	def draw(self, event):
 		x, y = event.x, event.y
-		if 0 <= x < 28 * self.scale and 0 <= y < 28 * self.scale:
+		if 0 <= x < self.size and 0 <= y < self.size:
 			self.dots.append((x, y))
 			self.canvas.create_oval(
-				x - self.scale * 1, y - self.scale * 1,
-				x + self.scale * 1, y + self.scale * 1,
-				fill='#333333'
+				x - self.scale, y - self.scale,
+				x + self.scale, y + self.scale,
+				fill='#222222'
 			)
 
 

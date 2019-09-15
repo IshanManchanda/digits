@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
 
-
+from preprocessor import deskew_image
 # TODO: Add a test suite which will test against the test data.
 #  it should firstly see how many predictions are correct, and also compute
 #  the total cost in prediction.
@@ -299,12 +299,13 @@ def main():
 	# n.train(training[:1000], validation[:500])
 	# n.plot()
 
-	for i in range(10):
+	for i in range(3):
 		draw_digit(training[i][0])
+		draw_digit(deskew_image(training[i][0].reshape(28, 28)))
 
 
 def draw_digit(image):
-	arr = np.array(image).reshape((28, 28)) * 256
+	arr = (np.array(image).reshape((28, 28)) * 255).astype('uint8')
 	Image.fromarray(arr).resize((256, 256), Image.ANTIALIAS).show()
 
 

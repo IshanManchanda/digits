@@ -1,58 +1,64 @@
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 from scipy.ndimage import interpolation
 
 
 def dots_to_image(dots, scale):
-	data = np.zeros((28, 28))
+	image = Image.new('L', (280, 280))
+	draw = ImageDraw.Draw(image)
+	for x, y in dots:
+		draw.ellipse((x - scale, y - scale, x + scale, y + scale), fill=255)
 
-	for dot in dots:
-		x, y = dot[0] // scale, dot[1] // scale
-		data[y][x] = 10
-
-		for x1, y1 in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
-			data[y1, x1] += 2
-
-		# data[y - 1, x - 1] += 1
-		# data[y - 1, x + 1] += 1
-		# data[y + 1, x - 1] += 1
-		# data[y + 1, x + 1] += 1
-
-	data = np.minimum(data * 2 / data.max(), 1)
-	# return data.flatten()
-	return data
-
-
-def dots_to_image2(dots, scale):
-	data = np.zeros((28, 28))
-
-	for dot in dots:
-		x, y = round(dot[0] / scale), round(dot[1] / scale)
-		data[y][x] = 4
-
-		# for x1, y1 in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
-		# 	data[y1, x1] += 2
-
-		# data[y - 1, x - 1] += 1
-		# data[y - 1, x + 1] += 1
-		# data[y + 1, x - 1] += 1
-		# data[y + 1, x + 1] += 1
-
-	data = np.minimum(data * 2 / data.max(), 1)
-	# return data.flatten()
-	return data
+	# Since size_normalize accepts and return a np array, we convert
+	# the argument and the return value accordingly
+	image = Image.fromarray(size_normalize(np.array(image)))
+	return np.array(image.resize((28, 28), Image.ANTIALIAS)) / 255
 
 
 def render_digit(image):
-	arr = np.array(image).reshape((28, 28)) * 256
+	arr = (np.array(image).reshape((28, 28)) * 255).astype('uint8')
 	Image.fromarray(arr).resize((256, 256), Image.ANTIALIAS).show()
 
 
-def size_normalize(image: np.ndarray):
-	# To size normalize, we calculate the bounding box of the drawn digit
-	points = image.nonzero()
-	height = max(points[0]) - min(points[0])
-	width = max(points[1]) - min(points[1])
+def size_normalize(image):
+	# First, we strip the empty space around the image (top and bottom)
+	i, j = 0, -1
+	while np.sum(image[i]) == 0:
+		i += 1
+	while np.sum(image[j]) == 0:
+		j -= 1
+	image = image[i:j]
+
+	# Similarly for the sides
+	while np.sum(image[:, 0]) == 0:
+		image = np.delete(image, 0, 1)
+
+	while np.sum(image[:, -1]) == 0:
+		image = np.delete(image, -1, 1)
+
+	# Now, we want the image to fit a 20x20 box. Thus, we fit the max of the 2
+	# dimensions to this desired size and scale the other accordingly.
+	# Note that numpy uses row-major ordering...
+	rows, cols = image.shape
+	scale = 200 / max(rows, cols)
+	rows, cols = round(rows * scale), round(cols * scale)
+
+	# ...but PIL uses column-major.
+	image = np.array(Image.fromarray(image).resize(
+		(cols, rows), Image.ANTIALIAS
+	))
+
+	# Finally, we need to pad our image to bring the size up to 28x28.
+	padding_row = (
+		int(np.ceil((280 - rows) / 2)),
+		int(np.floor((280 - rows) / 2))
+	)
+	padding_col = (
+		int(np.ceil((280 - cols) / 2)),
+		int(np.floor((280 - cols) / 2))
+	)
+	padding = (padding_row, padding_col)
+	return np.pad(image, padding, 'constant', constant_values=(0,))
 
 
 def compute_moments(image):
