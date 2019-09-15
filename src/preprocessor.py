@@ -15,7 +15,7 @@ def dots_to_image(dots, scale):
 	return np.array(image.resize((28, 28), Image.ANTIALIAS)) / 255
 
 
-def render_digit(image):
+def draw_digit(image):
 	arr = (np.array(image).reshape((28, 28)) * 255).astype('uint8')
 	Image.fromarray(arr).resize((256, 256), Image.ANTIALIAS).show()
 

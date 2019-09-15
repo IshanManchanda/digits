@@ -1,8 +1,10 @@
+import os
 import tkinter as tk
+
 import numpy as np
+
 from gui import InputGUI
 from network import NeuralNetwork, load_data
-import os
 
 
 def main():

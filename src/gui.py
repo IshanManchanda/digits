@@ -2,7 +2,7 @@ import tkinter as tk
 
 import numpy as np
 
-from preprocessor import deskew_image, dots_to_image, render_digit
+from preprocessor import deskew_image, dots_to_image, draw_digit
 
 desc = 'Draw a single digit in the canvas.\n' + \
        'For best output, try to ensure it is centered\n' + \
@@ -54,10 +54,10 @@ class InputGUI:
 	def predict(self):
 		print('Number of dots:', len(self.dots))
 		data = dots_to_image(self.dots, self.scale)
-		render_digit(data)
+		draw_digit(data)
 
 		deskewed = deskew_image(data)
-		render_digit(deskewed)
+		draw_digit(deskewed)
 		print(data)
 		print(data.mean(), data.min())
 		print("deskewed")
