@@ -3,23 +3,22 @@ import tkinter as tk
 import numpy as np
 
 from preprocessor import deskew_image, dots_to_image
-from utils import draw_digit
-
-desc = 'Draw a single digit in the canvas.\n' + \
-       'For best output, try to ensure it is centered\n' + \
-       'in the frame and nearly fills it.'
 
 
 class InputGUI:
 	def __init__(self, root, n=None):
 		self.root = root
-		self.n = n
-		self.dots = []
-		self.scale = 15
+		self.n = n  # NeuralNetwork object
+		self.dots = []  # Array to store locations of dots
+		self.scale = 15  # Stroke size
 		self.size = 28 * 10 - 1
 
 		self.root.minsize(700, 400)
 		self.root.title("pyDigits")
+
+		desc = 'Draw a single digit in the canvas.\n' + \
+			'For best output, try to ensure it is centered\n' + \
+			'in the frame and nearly fills it.'
 		self.label = tk.Label(root, text=desc)
 		self.label.grid(column=1, row=0, columnspan=3)
 
@@ -45,6 +44,7 @@ class InputGUI:
 		self.predict_button.grid(column=2, row=2)
 		self.close_button.grid(column=3, row=2)
 
+		# Needed for center alignment
 		self.root.grid_columnconfigure(0, weight=1)
 		self.root.grid_columnconfigure(4, weight=1)
 
@@ -54,10 +54,10 @@ class InputGUI:
 
 	def predict(self):
 		data = dots_to_image(self.dots, self.scale)
-		draw_digit(data)
+		# draw_digit(data)
 
 		deskewed = deskew_image(data)
-		draw_digit(deskewed)
+		# draw_digit(deskewed)
 
 		if self.n:
 			prediction = self.n.predict(data)

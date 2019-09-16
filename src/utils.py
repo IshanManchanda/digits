@@ -1,4 +1,5 @@
 import gzip
+import os
 import pickle
 
 import numpy as np
@@ -32,17 +33,15 @@ def load_data(deskew=True):
 
 
 def deskew_data():
+	if os.path.isfile('../data/mnist_py3_deskewed.pkl.gz'):
+		return
+
 	# This method deskews all the images and saves it to disk
 	with gzip.open('../data/mnist_py3.pkl.gz', 'rb') as f:
 		data = pickle.load(f)
 	processed_data = []
 
-	# Data contains 3 "sections": training, validation, and test
-	# containing 50K, 10K, and 10K examples each.
-	# We return this data as a list of tuples containing input-output pairs
 	for section in data:
-		# We reshape the inputs, and convert the outputs into
-		# "one-hot encoded vectors" which is just the output vector.
 		xs = [
 			list(deskew_image(x.reshape((28, 28))).reshape(784, ))
 			for x in section[0]

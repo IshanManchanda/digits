@@ -3,7 +3,6 @@ import json
 import numpy as np
 from matplotlib import pyplot as plt
 
-from preprocessor import deskew_image
 from utils import draw_digit, load_data
 
 
@@ -274,9 +273,8 @@ def main():
 	# n.train(training[:1000], validation[:500])
 	# n.plot()
 
-	for i in range(3):
+	for i in range(5):
 		draw_digit(training[i][0])
-		print(training[i][0].shape)
 
 
 if __name__ == '__main__':
