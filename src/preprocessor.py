@@ -15,11 +15,6 @@ def dots_to_image(dots, scale):
 	return np.array(image.resize((28, 28), Image.ANTIALIAS)) / 255
 
 
-def draw_digit(image):
-	arr = (np.array(image).reshape((28, 28)) * 255).astype('uint8')
-	Image.fromarray(arr).resize((256, 256), Image.ANTIALIAS).show()
-
-
 def size_normalize(image):
 	# First, we strip the empty space around the image (top and bottom)
 	i, j = 0, -1

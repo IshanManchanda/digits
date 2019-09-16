@@ -2,7 +2,8 @@ import tkinter as tk
 
 import numpy as np
 
-from preprocessor import deskew_image, dots_to_image, draw_digit
+from preprocessor import deskew_image, dots_to_image
+from utils import draw_digit
 
 desc = 'Draw a single digit in the canvas.\n' + \
        'For best output, try to ensure it is centered\n' + \
@@ -52,17 +53,11 @@ class InputGUI:
 		self.dots = []
 
 	def predict(self):
-		print('Number of dots:', len(self.dots))
 		data = dots_to_image(self.dots, self.scale)
 		draw_digit(data)
 
 		deskewed = deskew_image(data)
 		draw_digit(deskewed)
-		print(data)
-		print(data.mean(), data.min())
-		print("deskewed")
-		print(deskewed)
-		print(deskewed.mean(), deskewed.min())
 
 		if self.n:
 			prediction = self.n.predict(data)
@@ -84,26 +79,6 @@ def gui():
 	root = tk.Tk()
 	InputGUI(root)
 	root.mainloop()
-
-
-def process_dots(dots, scale):
-	data = np.zeros((28, 28))
-
-	for dot in dots:
-		x, y = dot[0] // scale, dot[1] // scale
-		data[y][x] = 1
-
-		# for x1, y1 in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
-		# 	data[x1, y1] += 2
-		#
-		# data[x - 1, y - 1] += 1
-		# data[x - 1, y + 1] += 1
-		# data[x + 1, y - 1] += 1
-		# data[x + 1, y + 1] += 1
-
-	# data /= data.max()
-	# print(data)
-	return data.flatten()
 
 
 if __name__ == '__main__':

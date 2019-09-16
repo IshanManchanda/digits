@@ -4,7 +4,8 @@ import tkinter as tk
 import numpy as np
 
 from gui import InputGUI
-from network import NeuralNetwork, load_data
+from network import NeuralNetwork
+from utils import load_data
 
 
 def main():

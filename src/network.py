@@ -1,14 +1,10 @@
-import gzip
 import json
-import pickle
 
 import numpy as np
 from matplotlib import pyplot as plt
 
-from preprocessor import deskew_image, draw_digit
-
-
-# TODO: Add a test suite which will test against the test data.
+from preprocessor import deskew_image
+from utils import draw_digit, load_data
 
 
 class LeakyReLU:
@@ -272,26 +268,6 @@ def softmax(z):
 	return np.nan_to_num(z / z_sum)
 
 
-def load_data():
-	# The _py3 version of the dataset is a redumped version for Python 3
-	# which doesn't use Python 2's latin1 encoding
-	with gzip.open('../data/mnist_py3.pkl.gz', 'rb') as f:
-		data = pickle.load(f)
-
-	processed_data = []
-	# Data contains 3 "sections": training, validation, and test
-	# containing 50K, 10K, and 10K examples each.
-	# We return this data as a list of tuples containing input-output pairs
-	for section in data:
-		# We reshape the inputs, and convert the outputs into
-		# "one-hot encoded vectors" which is just the output vector.
-		processed_data.append(list(zip(
-			[x.reshape((784,)) for x in section[0]],
-			[get_expected_y(y) for y in section[1]]
-		)))
-	return processed_data
-
-
 def main():
 	# n = NeuralNetwork([784, 256, 10])
 	training, validation, test = load_data()
@@ -300,13 +276,7 @@ def main():
 
 	for i in range(3):
 		draw_digit(training[i][0])
-		draw_digit(deskew_image(training[i][0].reshape(28, 28)))
-
-
-def get_expected_y(digit):
-	y = np.array([0] * 10)
-	y[digit] = 1
-	return y
+		print(training[i][0].shape)
 
 
 if __name__ == '__main__':
