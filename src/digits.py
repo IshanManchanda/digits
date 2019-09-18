@@ -15,7 +15,20 @@ def main():
 			deskew_data()
 
 	training, validation, test = load_data()
-	n = NeuralNetwork([784, 64, 10], eta=0.5, lmbda=0.05, alpha=0.05)
+	train([784, 128, 10], 0.008, 0, 0.05, training, validation)
+	train([784, 128, 10], 0.008, 0, 0.05, training, validation)
+	train([784, 128, 10], 0.008, 0, 0.05, training, validation)
+	train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
+	train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
+	train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
+
+
+# root = tk.Tk()
+# InputGUI(root, n)
+# root.mainloop()
+
+def train(size, eta, lmbda, alpha, training, validation):
+	n = NeuralNetwork(size, eta=eta, lmbda=lmbda, alpha=alpha)
 	n.train(
 		np.random.permutation(training)[:5000],
 		np.random.permutation(validation)[:500], epochs=20, batch_size=20
@@ -25,10 +38,6 @@ def main():
 		i += 1
 	n.save(f'..\\networks\\{i}.json')
 	n.plot(f'..\\networks\\{i}.png')
-
-	root = tk.Tk()
-	InputGUI(root, n)
-	root.mainloop()
 
 
 if __name__ == '__main__':
