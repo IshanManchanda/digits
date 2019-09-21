@@ -1,5 +1,0 @@
-Parser: Take training and test files, preprocess, store data in db
-
-Training: Retrieve and train
-
-Test: Run test suite, show some examples with confidence level, allow user to draw digits on scaled 28*28 canvas.
