@@ -141,11 +141,8 @@ class NeuralNetwork:
 		return n
 
 	def validate(self, validation_data):
-		correct = 0
-		for x, y in validation_data:
-			if np.argmax(y) == np.argmax(self.predict(x)):
-				correct += 1
-		return correct
+		# Returns the number of correct preditions
+		return sum(np.argmax(y) == np.argmax(self.predict(x)) for x, y in validation_data)
 
 	def get_activations(self, x):
 		# Validate the size of the input.
@@ -243,6 +240,8 @@ class NeuralNetwork:
 			self.biases[i] -= scale_factor * delta_biases[i]
 
 	def validate_input(self, x):
+		# This is hardly needed - it was added to serve as a sanity check
+		# in the event someone forgot to "flatten" the inputs.
 		if len(x) != self.ns[0]:
 			raise ValueError(
 				'Number of inputs != number of input neurons! '
