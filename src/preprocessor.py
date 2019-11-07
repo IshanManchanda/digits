@@ -9,7 +9,7 @@ def dots_to_image(dots, scale):
 	for x, y in dots:
 		draw.ellipse((x - scale, y - scale, x + scale, y + scale), fill=255)
 
-	# Since size_normalize accepts and return a np array, we convert
+	# Since size_normalize accepts and returns a np array, we convert
 	# the argument and the return value accordingly
 	image = Image.fromarray(size_normalize(np.array(image)))
 	return np.array(image.resize((28, 28), Image.ANTIALIAS)) / 255
@@ -71,6 +71,7 @@ def compute_moments(image):
 	offset_y = c1 - mu_y
 
 	# Variance about the axes
+	# Looks similar to moment of inertia... hmm...
 	variance_x = np.sum(offset_x ** 2 * image) / sum_of_pixels
 	variance_y = np.sum(offset_y ** 2 * image) / sum_of_pixels
 
@@ -78,10 +79,10 @@ def compute_moments(image):
 	# If one increases with the other, they show a positive covariance.
 	covariance = np.sum(offset_x * offset_y * image) / sum_of_pixels
 
-	# The covariance matrix for 2 quantities is a n * n matrix.
+	# The covariance matrix for n quantities is a n * n matrix, hence 2 * 2 here
 	# The (i, j)th cell holds the covariance between the i'th and the j'th
 	# quantities. In particular, when i = j, the cell simply holds the variance
-	# of the i'th quantity. Further, (i, j)th element = (j, i)th element.
+	# of the i'th quantity. Clearly, (i, j)th element = (j, i)th element.
 	covariance_matrix = np.array([
 		[variance_x, covariance],
 		[covariance, variance_y]

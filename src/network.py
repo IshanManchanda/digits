@@ -141,8 +141,11 @@ class NeuralNetwork:
 		return n
 
 	def validate(self, validation_data):
-		# Returns the number of correct preditions
-		return sum(np.argmax(y) == np.argmax(self.predict(x)) for x, y in validation_data)
+		# Returns the number of correct predictions
+		return sum(
+			np.argmax(y) == np.argmax(self.predict(x))
+			for x, y in validation_data
+		)
 
 	def get_activations(self, x):
 		# Validate the size of the input.
