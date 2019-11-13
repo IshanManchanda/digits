@@ -17,8 +17,8 @@ class InputGUI:
 		self.root.title("pyDigits")
 
 		desc = 'Draw a single digit in the canvas.\n' + \
-			'For best output, try to ensure it is centered\n' + \
-			'in the frame and nearly fills it.'
+		       'For best output, try to ensure it is centered\n' + \
+		       'in the frame and nearly fills it.'
 		self.label = tk.Label(root, text=desc)
 		self.label.grid(column=1, row=0, columnspan=3)
 

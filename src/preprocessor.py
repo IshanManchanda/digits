@@ -79,7 +79,8 @@ def compute_moments(image):
 	# If one increases with the other, they show a positive covariance.
 	covariance = np.sum(offset_x * offset_y * image) / sum_of_pixels
 
-	# The covariance matrix for n quantities is a n * n matrix, hence 2 * 2 here
+	# The covariance matrix for n quantities is a n * n matrix, hence 2 * 2
+	# here
 	# The (i, j)th cell holds the covariance between the i'th and the j'th
 	# quantities. In particular, when i = j, the cell simply holds the variance
 	# of the i'th quantity. Clearly, (i, j)th element = (j, i)th element.

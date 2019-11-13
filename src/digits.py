@@ -1,9 +1,7 @@
 import os
-import tkinter as tk
 
 import numpy as np
 
-from gui import InputGUI
 from network import NeuralNetwork
 from utils import deskew_data, load_data
 

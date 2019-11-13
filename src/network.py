@@ -144,7 +144,7 @@ class NeuralNetwork:
 		# Returns the number of correct predictions
 		return sum(
 			np.argmax(y) == np.argmax(self.predict(x))
-			for x, y in validation_data
+				for x, y in validation_data
 		)
 
 	def get_activations(self, x):
