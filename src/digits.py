@@ -2,9 +2,12 @@ import os
 
 import numpy as np
 
-from network import NeuralNetwork
-from utils import deskew_data, load_data
+from .network import NeuralNetwork
+from .utils import deskew_data, load_data
 
+
+# TODO: Move to Weights and Biases to track models
+#  in place of the current "dump as json" method
 
 def main():
 	if not os.path.isfile('../data/mnist_py3_deskewed.pkl.gz'):

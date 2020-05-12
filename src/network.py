@@ -2,8 +2,9 @@ import json
 
 import numpy as np
 from matplotlib import pyplot as plt
+import wandb
 
-from utils import draw_digit, load_data
+from .utils import draw_digit, load_data
 
 
 class LeakyReLU:
@@ -38,6 +39,11 @@ class NeuralNetwork:
 
 		# Activation Function Object
 		self.act_fn = LeakyReLU(alpha)  # Parameter for LReLU
+
+		# Log hyperparameters in wandb to analyze later.
+		wandb.config.update({
+			"ns": ns, "eta": eta, 'lambda': lmbda, 'alpha': alpha
+		})
 
 		# Randomly initialize thetas (weights) with a normal distribution
 		# of mean zero and variance as the reciprocal of the number of inputs
@@ -87,6 +93,9 @@ class NeuralNetwork:
 			if validation_data is not None:
 				correct = self.validate(validation_data)
 				percentage = 100 * correct / n_validation
+
+				# Log the data in wandb and also locally.
+				wandb.log({'epoch': i, 'accuracy': percentage})
 				self.performance.append(percentage)
 				print(f'Epoch {i}: {correct} / {n_validation} ({percentage}%)')
 
@@ -112,9 +121,9 @@ class NeuralNetwork:
 	def save(self, filename):
 		# This function will save all parameters of our network.
 		# We use this elaborate setup instead of simply pickling and dumping
-		# the class so that if we change the architecture of our class,
-		# we are still able to use this data. Unpickling and loading will not
-		# work well in that case.
+		# the network object so that we can still use this data,
+		# even if we change the architecture of our class.
+		# Unpickling and loading will not work in that case.
 		data = {
 			'ns': self.ns,
 			'eta': self.eta,
@@ -126,6 +135,7 @@ class NeuralNetwork:
 		}
 		with open(filename, 'w') as f:
 			json.dump(data, f)
+		wandb.save(filename)
 
 	@staticmethod
 	def load(filename):
@@ -270,6 +280,7 @@ def softmax(z):
 
 
 def main():
+	wandb.init(project="digits")
 	# n = NeuralNetwork([784, 256, 10])
 	training, validation, test = load_data()
 	# n.train(training[:1000], validation[:500])

@@ -6,6 +6,11 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
+matplotlib = "==3.2.1"
+numpy = "==1.18.4"
+pillow = "==7.1.2"
+scipy = "==1.4.1"
+wandb = "==0.8.35"
 
 [requires]
-python_version = "3.7"
+python_full_version = "3.8.2"

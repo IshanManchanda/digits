@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 from PIL import Image
 
-from preprocessor import deskew_image
+from .preprocessor import deskew_image
 
 
 def load_data(deskew=True):

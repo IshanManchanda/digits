@@ -2,7 +2,7 @@ import tkinter as tk
 
 import numpy as np
 
-from preprocessor import deskew_image, dots_to_image
+from .preprocessor import deskew_image, dots_to_image
 
 
 class InputGUI:
