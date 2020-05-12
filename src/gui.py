@@ -3,6 +3,7 @@ import tkinter as tk
 import numpy as np
 
 from .preprocessor import deskew_image, dots_to_image
+from .utils import draw_digit
 
 
 class InputGUI:
@@ -16,9 +17,10 @@ class InputGUI:
 		self.root.minsize(700, 400)
 		self.root.title("pyDigits")
 
-		desc = 'Draw a single digit in the canvas.\n' + \
-		       'For best output, try to ensure it is centered\n' + \
-		       'in the frame and nearly fills it.'
+		desc = \
+			'Draw a single digit in the canvas.\n' + \
+			'For best output, try to ensure it is centered\n' + \
+			'in the frame and nearly fills it.'
 		self.label = tk.Label(root, text=desc)
 		self.label.grid(column=1, row=0, columnspan=3)
 
@@ -57,7 +59,7 @@ class InputGUI:
 		# draw_digit(data)
 
 		deskewed = deskew_image(data)
-		# draw_digit(deskewed)
+		draw_digit(deskewed)
 
 		if self.n:
 			prediction = self.n.predict(data)

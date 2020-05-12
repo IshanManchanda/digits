@@ -105,4 +105,5 @@ def deskew_image(image):
 	deskewed = interpolation.affine_transform(image, affine, offset=offset)
 
 	# The image needs to be renormalized after the transformation
+	# noinspection PyArgumentList
 	return (deskewed - deskewed.min()) / (deskewed.max() - deskewed.min())

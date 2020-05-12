@@ -29,7 +29,7 @@ class NeuralNetwork:
 	def __init__(self, ns, eta=0.5, lmbda=0, alpha=0.05):
 		print(f'ns: {ns}, eta: {eta}, lambda: {lmbda}, alpha: {alpha}')
 		# Network Structure
-		self.l = len(ns)  # Number of layers
+		self.n = len(ns)  # Number of layers
 		self.ns = ns  # Number of neurons in each layer
 
 		# Hyper Parameters
@@ -50,7 +50,7 @@ class NeuralNetwork:
 		# received by the particular neuron.
 		self.thetas = [
 			np.random.randn(ns[i], ns[i - 1]) / np.sqrt(ns[i - 1])
-			for i in range(1, self.l)
+			for i in range(1, self.n)
 		]
 
 		# Similarly, initialize the biases with a distribution of mean zero
@@ -154,7 +154,7 @@ class NeuralNetwork:
 		# Returns the number of correct predictions
 		return sum(
 			np.argmax(y) == np.argmax(self.predict(x))
-				for x, y in validation_data
+			for x, y in validation_data
 		)
 
 	def get_activations(self, x):
@@ -190,7 +190,7 @@ class NeuralNetwork:
 	def train_batch(self, batch):
 		delta_thetas = [
 			np.zeros((self.ns[i], self.ns[i - 1]))
-			for i in range(1, self.l)
+			for i in range(1, self.n)
 		]
 		delta_biases = [np.zeros((x,)) for x in self.ns[1:]]
 
@@ -222,7 +222,7 @@ class NeuralNetwork:
 			derivatives[-2] = np.dot(self.thetas[-1].transpose(), difference)
 
 			# Loop over all hidden layers, backwards
-			for i in range(self.l - 3, -1, -1):
+			for i in range(self.n - 3, -1, -1):
 				# Assign some variables to make the following code cleaner.
 				a_t = activations[i].reshape((1, -1))
 				theta_t = self.thetas[i].transpose()
@@ -244,7 +244,7 @@ class NeuralNetwork:
 				derivatives[i] = np.dot(theta_t, error)
 
 		scale_factor = self.eta / len(batch)
-		for i in range(self.l - 1):
+		for i in range(self.n - 1):
 			# L2 regularization term
 			self.thetas[i] *= 1 - (scale_factor * self.lmbda)
 
