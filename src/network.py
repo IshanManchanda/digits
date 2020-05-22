@@ -1,8 +1,8 @@
 import json
 
 import numpy as np
-from matplotlib import pyplot as plt
 import wandb
+from matplotlib import pyplot as plt
 
 from .utils import draw_digit, load_data
 
@@ -27,6 +27,7 @@ class LeakyReLU:
 
 class NeuralNetwork:
 	def __init__(self, ns, eta=0.5, lmbda=0, alpha=0.05):
+		# TODO: Replace with - wandb.config.variable = value
 		print(f'ns: {ns}, eta: {eta}, lambda: {lmbda}, alpha: {alpha}')
 		# Network Structure
 		self.n = len(ns)  # Number of layers
@@ -90,6 +91,7 @@ class NeuralNetwork:
 				self.train_batch(batch)
 
 			# After each epoch, optionally print progress
+			# TODO: wandb.log({'epoch': epoch, 'loss': loss})
 			if validation_data is not None:
 				correct = self.validate(validation_data)
 				percentage = 100 * correct / n_validation
@@ -280,7 +282,7 @@ def softmax(z):
 
 
 def main():
-	wandb.init(project="digits")
+	wandb.init(project='digits')
 	# n = NeuralNetwork([784, 256, 10])
 	training, validation, test = load_data()
 	# n.train(training[:1000], validation[:500])
@@ -288,6 +290,13 @@ def main():
 
 	for i in range(5):
 		draw_digit(training[i][0])
+
+	# by default, this will save to a new subfolder for files associated
+	# with your run, created in wandb.run.dir (which is ./wandb by default)
+	# TODO: wandb.save("mymodel.h5")
+
+	# you can pass the full path to the Keras model API
+	# model.save(os.path.join(wandb.run.dir, "mymodel.h5"))
 
 
 if __name__ == '__main__':
