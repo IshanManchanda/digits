@@ -9,6 +9,12 @@ from .preprocessor import deskew_image
 
 
 def load_data(deskew=True):
+	"""
+	Loads MNIST dataset from disk.
+
+	Returns the training, validation, and test data as a list of tuples,
+	where the outputs are one-hot encoded vectors.
+	"""
 	# The _py3 version of the dataset is a redumped version for Python 3
 	# which doesn't use Python 2's latin1 encoding
 	if deskew:
@@ -33,6 +39,10 @@ def load_data(deskew=True):
 
 
 def deskew_data():
+	"""
+	Deskews the MNIST dataset and saves it to disk.
+	"""
+	# Check if deskewed data already exists
 	if os.path.isfile('../data/mnist_py3_deskewed.pkl.gz'):
 		return
 
@@ -54,12 +64,18 @@ def deskew_data():
 
 
 def get_expected_y(digit):
+	"""
+	Returns a one-hot encoded vector of the inputted digit.
+	"""
 	y = np.array([0] * 10)
 	y[digit] = 1
 	return y
 
 
 def draw_digit(image):
+	"""
+	Renders and displays the image.
+	"""
 	arr = (np.array(image).reshape((28, 28)) * 255).astype('uint8')
 	Image.fromarray(arr).resize((256, 256), Image.ANTIALIAS).show()
 

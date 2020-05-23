@@ -90,8 +90,6 @@ class NeuralNetwork:
 				# Each batch is then used to train the network
 				self.train_batch(batch)
 
-			# After each epoch, optionally print progress
-			# TODO: wandb.log({'epoch': epoch, 'loss': loss})
 			if validation_data is not None:
 				correct = self.validate(validation_data)
 				percentage = 100 * correct / n_validation
@@ -282,6 +280,8 @@ def softmax(z):
 
 
 def main():
+	# TODO: Animated plotting to show performance change with time.
+	#  check scratch.py
 	wandb.init(project='digits')
 	# n = NeuralNetwork([784, 256, 10])
 	training, validation, test = load_data()
