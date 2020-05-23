@@ -4,7 +4,7 @@ import numpy as np
 import wandb
 from matplotlib import pyplot as plt
 
-from .utils import draw_digit, load_data
+from utils import draw_digit, load_data
 
 
 class LeakyReLU:
@@ -27,7 +27,6 @@ class LeakyReLU:
 
 class NeuralNetwork:
 	def __init__(self, ns, eta=0.5, lmbda=0, alpha=0.05):
-		# TODO: Replace with - wandb.config.variable = value
 		print(f'ns: {ns}, eta: {eta}, lambda: {lmbda}, alpha: {alpha}')
 		# Network Structure
 		self.n = len(ns)  # Number of layers
@@ -43,7 +42,7 @@ class NeuralNetwork:
 
 		# Log hyperparameters in wandb to analyze later.
 		wandb.config.update({
-			"ns": ns, "eta": eta, 'lambda': lmbda, 'alpha': alpha
+			'ns': ns, 'eta': eta, 'lambda': lmbda, 'alpha': alpha
 		})
 
 		# Randomly initialize thetas (weights) with a normal distribution
@@ -282,7 +281,6 @@ def softmax(z):
 def main():
 	# TODO: Animated plotting to show performance change with time.
 	#  check scratch.py
-	wandb.init(project='digits')
 	# n = NeuralNetwork([784, 256, 10])
 	training, validation, test = load_data()
 	# n.train(training[:1000], validation[:500])

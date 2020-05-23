@@ -1,8 +1,14 @@
 # Folders to ignore
+wandb
+src/wandb
 
 
 # Files to ignore
+scratch.py
 data/mnist_py3_deskewed.pkl.gz
+networks/*
+!networks/humans.txt
+
 
 # File types to ignore
 *.pyc

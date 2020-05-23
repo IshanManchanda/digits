@@ -2,8 +2,8 @@ import tkinter as tk
 
 import numpy as np
 
-from .preprocessor import deskew_image, dots_to_image
-from .utils import draw_digit
+from preprocessor import deskew_image, dots_to_image
+from utils import draw_digit
 
 
 class InputGUI:

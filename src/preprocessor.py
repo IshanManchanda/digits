@@ -4,6 +4,9 @@ from scipy.ndimage import interpolation
 
 
 def dots_to_image(dots, scale):
+	"""
+	Returns an image generated from the given dots.
+	"""
 	image = Image.new('L', (280, 280))
 	draw = ImageDraw.Draw(image)
 	for x, y in dots:
@@ -16,6 +19,12 @@ def dots_to_image(dots, scale):
 
 
 def size_normalize(image):
+	"""
+	Returns a normalized version of the inputted image.
+
+	The digit is scaled to fit in a 20x20 box,
+	and then padded with whitespace to 28x28
+	"""
 	# First, we strip the empty space around the image (top and bottom)
 	i, j = 0, -1
 	while np.sum(image[i]) == 0:
@@ -57,7 +66,9 @@ def size_normalize(image):
 
 
 def compute_moments(image):
-	# This function computes the center of mass and the covariance of the image
+	"""
+	Computes the center of mass and the covariance of the image.
+	"""
 	sum_of_pixels = np.sum(image)
 
 	# We create a mesh grid which will allow us to extract the x and y
@@ -93,6 +104,9 @@ def compute_moments(image):
 
 
 def deskew_image(image):
+	"""
+	Deskews a given image.
+	"""
 	center_of_mass, covariance_matrix = compute_moments(image)
 	# Alpha is the ratio of the covariance and the variance
 	alpha = covariance_matrix[0, 1] / covariance_matrix[0, 0]

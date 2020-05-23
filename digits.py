@@ -1,12 +1,14 @@
 import os
 
 import numpy as np
+import wandb
 
-from .network import NeuralNetwork
-from .utils import deskew_data, load_data
+from network import NeuralNetwork
+from utils import deskew_data, load_data
 
 
 def main():
+	wandb.init(project='digits')
 	if not os.path.isfile('../data/mnist_py3_deskewed.pkl.gz'):
 		x = input('Deskewed data not found, generate now? (y/n): ')
 		if x.lower() == 'y':
@@ -14,11 +16,14 @@ def main():
 
 	training, validation, test = load_data()
 	train([784, 128, 10], 0.008, 0, 0.05, training, validation)
-	train([784, 128, 10], 0.008, 0, 0.05, training, validation)
-	train([784, 128, 10], 0.008, 0, 0.05, training, validation)
-	train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
-	train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
-	train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
+	wandb.run.save()
+
+
+# train([784, 128, 10], 0.008, 0, 0.05, training, validation)
+# train([784, 128, 10], 0.008, 0, 0.05, training, validation)
+# train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
+# train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
+# train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
 
 
 # root = tk.Tk()
@@ -36,6 +41,8 @@ def train(size, eta, lmbda, alpha, training, validation):
 		i += 1
 	n.save(f'..\\networks\\{i}.json')
 	n.plot(f'..\\networks\\{i}.png')
+	wandb.save(f'..\\networks\\{i}.json')
+	wandb.save(f'..\\networks\\{i}.png')
 
 
 if __name__ == '__main__':
