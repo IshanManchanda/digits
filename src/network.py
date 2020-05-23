@@ -74,11 +74,14 @@ class NeuralNetwork:
 		perm = np.arange(len(data))
 		self.performance = []
 		n_validation = len(validation_data)
+
 		if validation_data is not None:
 			correct = self.validate(validation_data)
 			print(f'Initial: {correct} / {n_validation}')
+			percentage = 100 * correct / n_validation
+			wandb.log({'epoch': 0, 'accuracy': percentage / 100})
 
-		for i in range(epochs):
+		for i in range(1, epochs + 1):
 			np.random.shuffle(perm)
 
 			# We split the training data in batches, each of size batch_size.
@@ -95,7 +98,7 @@ class NeuralNetwork:
 				percentage = 100 * correct / n_validation
 
 				# Log the data in wandb and also locally.
-				wandb.log({'epoch': i, 'accuracy': percentage})
+				wandb.log({'epoch': i, 'accuracy': percentage / 100})
 				self.performance.append(percentage)
 				print(f'Epoch {i}: {correct} / {n_validation} ({percentage}%)')
 
@@ -299,5 +302,5 @@ def main():
 
 
 if __name__ == '__main__':
-	os.chdir(os.path.dirname(os.path.dirname(__file__)))
+	os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 	main()

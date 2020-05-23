@@ -15,14 +15,12 @@ def main():
 
 	training, validation, test = load_data()
 	train([784, 128, 10], 0.008, 0, 0.05, training, validation)
+	# train([784, 128, 10], 0.008, 0, 0.05, training, validation)
+	# train([784, 128, 10], 0.008, 0, 0.05, training, validation)
+	# train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
+	# train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
+	train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
 	wandb.run.save()
-
-
-# train([784, 128, 10], 0.008, 0, 0.05, training, validation)
-# train([784, 128, 10], 0.008, 0, 0.05, training, validation)
-# train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
-# train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
-# train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
 
 
 # root = tk.Tk()
@@ -37,15 +35,22 @@ def train(size, eta, lmbda, alpha, training, validation):
 			np.random.permutation(training)[:5000],
 			np.random.permutation(validation)[:500], epochs=20, batch_size=20
 		)
-		i = 1
-		while os.path.isfile(f'..\\networks\\{i}.json'):
-			i += 1
-		n.save(f'..\\networks\\{i}.json')
-		n.plot(f'..\\networks\\{i}.png')
-		wandb.save(f'..\\networks\\{i}.json')
-		wandb.save(f'..\\networks\\{i}.png')
+
+		data_dir = os.path.join(os.getcwd(), 'networks')
+		i = get_save_index(data_dir)
+		n.save(os.path.join(data_dir, f'{i}.json'))
+		n.plot(os.path.join(data_dir, f'{i}.png'))
+		wandb.save(os.path.join(data_dir, f'{i}.json'))
+		wandb.save(os.path.join(data_dir, f'{i}.png'))
+
+
+def get_save_index(data_dir):
+	i = 1
+	while os.path.isfile(os.path.join(data_dir, f'{i}.json')):
+		i += 1
+	return i
 
 
 if __name__ == '__main__':
-	os.chdir(os.path.dirname(__file__))
+	os.chdir(os.path.dirname(os.path.abspath(__file__)))
 	main()
