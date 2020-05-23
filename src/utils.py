@@ -15,14 +15,18 @@ def load_data(deskew=True):
 	Returns the training, validation, and test data as a list of tuples,
 	where the outputs are one-hot encoded vectors.
 	"""
+
 	# The _py3 version of the dataset is a redumped version for Python 3
 	# which doesn't use Python 2's latin1 encoding
-	if deskew:
-		with gzip.open('../data/mnist_py3_deskewed.pkl.gz', 'rb') as f:
-			data = pickle.load(f)
-	else:
-		with gzip.open('../data/mnist_py3.pkl.gz', 'rb') as f:
-			data = pickle.load(f)
+	data_dir = os.path.join(os.getcwd(), 'data')
+	file_path = os.path.join(data_dir, 'mnist_py3_deskewed.pkl.gz') if deskew \
+		else os.path.join(data_dir, 'mnist_py3.pkl.gz')
+
+	if not os.path.isfile(file_path):
+		raise FileNotFoundError(f'{file_path} not found!')
+
+	with gzip.open(file_path, 'rb') as f:
+		data = pickle.load(f)
 	processed_data = []
 
 	# Data contains 3 "sections": training, validation, and test
@@ -43,11 +47,13 @@ def deskew_data():
 	Deskews the MNIST dataset and saves it to disk.
 	"""
 	# Check if deskewed data already exists
-	if os.path.isfile('../data/mnist_py3_deskewed.pkl.gz'):
+	data_dir = os.path.join(os.getcwd(), 'data')
+	deskew_path = os.path.join(data_dir, 'mnist_py3_deskewed.pkl.gz')
+	if os.path.isfile(deskew_path):
 		return
 
-	# This method deskews all the images and saves it to disk
-	with gzip.open('../data/mnist_py3.pkl.gz', 'rb') as f:
+	data_path = os.path.join(data_dir, 'mnist_py3.pkl.gz')
+	with gzip.open(data_path, 'rb') as f:
 		data = pickle.load(f)
 	processed_data = []
 
@@ -58,7 +64,7 @@ def deskew_data():
 		]
 		processed_data.append((xs, section[1]))
 
-	with gzip.open('../data/mnist_py3_deskewed.pkl.gz', 'wb') as f:
+	with gzip.open(deskew_path, 'wb') as f:
 		# A protocol of -1 means the latest one
 		pickle.dump(processed_data, f, protocol=-1)
 
@@ -85,4 +91,5 @@ def main():
 
 
 if __name__ == '__main__':
+	os.chdir(os.path.dirname(os.path.dirname(__file__)))
 	main()

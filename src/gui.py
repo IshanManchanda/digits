@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 
 import numpy as np
@@ -84,4 +85,5 @@ def gui():
 
 
 if __name__ == '__main__':
+	os.chdir(os.path.dirname(os.path.dirname(__file__)))
 	gui()
