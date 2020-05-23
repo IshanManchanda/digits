@@ -14,7 +14,7 @@ def main():
 			deskew_data()
 
 	training, validation, test = load_data()
-	train([784, 128, 10], 0.008, 0, 0.05, training, validation)
+	train([784, 128, 10], 0.008, 0.2, 0.05, training, validation)
 
 
 # root = tk.Tk()

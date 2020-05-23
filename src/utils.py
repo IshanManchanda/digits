@@ -15,6 +15,7 @@ def load_data(deskew=True):
 	Returns the training, validation, and test data as a list of tuples,
 	where the outputs are one-hot encoded vectors.
 	"""
+	# TODO: Optimize memory usage by loading only parts.
 
 	# The _py3 version of the dataset is a redumped version for Python 3
 	# which doesn't use Python 2's latin1 encoding
