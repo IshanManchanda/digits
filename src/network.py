@@ -77,9 +77,9 @@ class NeuralNetwork:
 
 		if validation_data is not None:
 			correct = self.validate(validation_data)
-			print(f'Initial: {correct} / {n_validation}')
 			percentage = 100 * correct / n_validation
-			wandb.log({'epoch': 0, 'accuracy': percentage / 100})
+			print(f'Initial: {correct} / {n_validation} ({percentage}%)')
+			wandb.log({'epoch': 0, 'accuracy': percentage})
 
 		for i in range(1, epochs + 1):
 			np.random.shuffle(perm)
@@ -98,7 +98,7 @@ class NeuralNetwork:
 				percentage = 100 * correct / n_validation
 
 				# Log the data in wandb and also locally.
-				wandb.log({'epoch': i, 'accuracy': percentage / 100})
+				wandb.log({'epoch': i, 'accuracy': percentage})
 				self.performance.append(percentage)
 				print(f'Epoch {i}: {correct} / {n_validation} ({percentage}%)')
 

@@ -15,12 +15,6 @@ def main():
 
 	training, validation, test = load_data()
 	train([784, 128, 10], 0.008, 0, 0.05, training, validation)
-	# train([784, 128, 10], 0.008, 0, 0.05, training, validation)
-	# train([784, 128, 10], 0.008, 0, 0.05, training, validation)
-	# train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
-	# train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
-	train([784, 128, 10], 0.0075, 0, 0.05, training, validation)
-	wandb.run.save()
 
 
 # root = tk.Tk()
@@ -28,20 +22,20 @@ def main():
 # root.mainloop()
 
 def train(size, eta, lmbda, alpha, training, validation):
-	run = wandb.init(project='digits', reinit=True)
-	with run:
-		n = NeuralNetwork(size, eta=eta, lmbda=lmbda, alpha=alpha)
-		n.train(
-			np.random.permutation(training)[:5000],
-			np.random.permutation(validation)[:500], epochs=20, batch_size=20
-		)
+	wandb.init(project='digits')
+	n = NeuralNetwork(size, eta=eta, lmbda=lmbda, alpha=alpha)
+	n.train(
+		np.random.permutation(training)[:5000],
+		np.random.permutation(validation)[:500], epochs=20, batch_size=20
+	)
 
-		data_dir = os.path.join(os.getcwd(), 'networks')
-		i = get_save_index(data_dir)
-		n.save(os.path.join(data_dir, f'{i}.json'))
-		n.plot(os.path.join(data_dir, f'{i}.png'))
-		wandb.save(os.path.join(data_dir, f'{i}.json'))
-		wandb.save(os.path.join(data_dir, f'{i}.png'))
+	data_dir = os.path.join(os.getcwd(), 'networks')
+	i = get_save_index(data_dir)
+	n.save(os.path.join(data_dir, f'{i}.json'))
+	n.plot(os.path.join(data_dir, f'{i}.png'))
+	wandb.save(os.path.join(data_dir, f'{i}.json'))
+	wandb.save(os.path.join(data_dir, f'{i}.png'))
+	wandb.run.save()
 
 
 def get_save_index(data_dir):
