@@ -6,6 +6,7 @@ src/wandb
 # Files to ignore
 scratch.py
 data/mnist_py3_deskewed.pkl.gz
+data/mnist_py3_mini_deskewed.pkl.gz
 networks/*
 !networks/humans.txt
 

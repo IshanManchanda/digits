@@ -4,7 +4,7 @@ import tkinter as tk
 import numpy as np
 
 from preprocessor import deskew_image, dots_to_image
-from utils import draw_digit
+from utils import draw_digit, save_digit
 
 
 class InputGUI:
@@ -56,16 +56,25 @@ class InputGUI:
 		self.dots = []
 
 	def predict(self):
+		# TODO: Create new directory inside the run folder for this prediction
 		data = dots_to_image(self.dots, self.scale)
-		# draw_digit(data)
-
+		# save_digit(data, 'raw.png')
 		deskewed = deskew_image(data)
-		draw_digit(deskewed)
+		# TODO: Save images in prediction folder
+		# save_digit(data, 'deskewed.png')
+
+		# draw_digit(data)
+		# draw_digit(deskewed)
 
 		if self.n:
-			prediction = self.n.predict(data)
+			# TODO: Save raw as well as deskewed prediction as json
+			# prediction = self.n.predict(data.reshape((784,)))
+			prediction = self.n.predict(deskewed.reshape((784,)))
 			digit = np.argmax(prediction)
-			print(prediction, digit, prediction[digit])
+			print('Prediction: %s, confidence: %d%%' % (
+				digit, prediction[digit] * 100
+			))
+			print(prediction)
 
 	def draw(self, event):
 		x, y = event.x, event.y
@@ -78,9 +87,9 @@ class InputGUI:
 			)
 
 
-def gui():
+def gui(n=None):
 	root = tk.Tk()
-	InputGUI(root)
+	InputGUI(root, n)
 	root.mainloop()
 
 
