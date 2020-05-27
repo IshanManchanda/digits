@@ -11,3 +11,26 @@ digits.py will manage it's own wandb.
 digits.py will load_data if called with __main__.
 
 Runner.py (or something else) will call a bunch of digits.py in multiple threads.
+
+
+--------------------------------------------------------------------------------
+
+Decouple training and GUI stages
+
+Training runs will generate a network.json which will be read and used
+directly by the gui.
+
+Flow:
+
+Run digits.
+It checks if network.json present.
+	If present, option to load and proceed with gui, or begin new training.
+		Once new training complete, option to use previous or current network.
+		Archive each "non-current" network.
+	If not present, proceed to training.
+
+During training, mnist dataset and so is checked.
+Deskewed versions, if needed, are generated.
+	Package deskewed in parts.
+	Store 10k items per part? (50k + 10k + 10k -> 7 parts)
+	Or maybe 10k x 5, 5k x 2, 5k x 2 -> 9 ?
