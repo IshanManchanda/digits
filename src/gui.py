@@ -16,7 +16,7 @@ class InputGUI:
 		self.size = 28 * 10 - 1
 
 		self.root.minsize(700, 400)
-		self.root.title("pyDigits")
+		self.root.title('Digits')
 
 		desc = \
 			'Draw a single digit in the canvas.\n' + \
@@ -34,13 +34,13 @@ class InputGUI:
 		self.canvas.bind('<B1-Motion>', self.draw)
 
 		self.clear_button = tk.Button(
-			self.root, text="Clear", command=self.clear
+			self.root, text='Clear', command=self.clear
 		)
 		self.predict_button = tk.Button(
 			self.root, text='Predict', command=self.predict
 		)
 		self.close_button = tk.Button(
-			self.root, text="Close", command=self.root.destroy
+			self.root, text='Close', command=self.root.destroy
 		)
 
 		self.clear_button.grid(column=1, row=2)
@@ -52,7 +52,7 @@ class InputGUI:
 		self.root.grid_columnconfigure(4, weight=1)
 
 	def clear(self):
-		self.canvas.delete("all")
+		self.canvas.delete('all')
 		self.dots = []
 
 	def predict(self):
@@ -87,7 +87,7 @@ class InputGUI:
 			)
 
 
-def gui(n=None):
+def run_gui(n=None):
 	root = tk.Tk()
 	InputGUI(root, n)
 	root.mainloop()
@@ -95,4 +95,4 @@ def gui(n=None):
 
 if __name__ == '__main__':
 	os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-	gui()
+	run_gui()
