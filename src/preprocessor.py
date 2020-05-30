@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 from PIL import Image, ImageDraw
 from scipy.ndimage import interpolation
@@ -123,7 +121,3 @@ def deskew_image(image):
 	# The image needs to be renormalized after the transformation
 	# noinspection PyArgumentList
 	return (deskewed - deskewed.min()) / (deskewed.max() - deskewed.min())
-
-
-if __name__ == '__main__':
-	os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

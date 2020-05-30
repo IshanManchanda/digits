@@ -67,6 +67,8 @@ def deskew_data():
 			xs.append(list(deskew_image(x.reshape((28, 28))).reshape(784, )))
 		processed_data.append((xs, section[1]))
 
+	# TODO: Package into parts of 10k/5k/5k.
+
 	# deskew_mini_path = os.path.join(data_dir,
 	# 'mnist_py3_mini_deskewed.pkl.gz')
 	# processed_data_mini = [

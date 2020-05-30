@@ -2,6 +2,7 @@ import os
 
 import wandb
 
+from globals import root_dir
 from src.gui import run_gui
 from src.network import NeuralNetwork
 from src.utils import deskew_data, load_data
@@ -18,7 +19,7 @@ def main():
 		x = input('Trained network found, train new network anyways? (y/n: ')
 		if x.lower() == 'y':
 			# TODO: Backup current network and train new one
-			old_path = ''
+			old_path = os.path.join(root_dir, '')
 			new_path = ''
 			os.rename(old_path, new_path)
 			pass
@@ -43,5 +44,4 @@ def gui():
 
 
 if __name__ == '__main__':
-	os.chdir(os.path.dirname(os.path.abspath(__file__)))
 	main()
