@@ -14,9 +14,6 @@ def train(size, eta, lmbda, alpha, training, validation):
 		np.random.permutation(validation)[:500], epochs=5, batch_size=20
 	)
 
-	# i = get_save_index(networks_dir)
-	# data_dir = os.path.join(archive_dir, str(i))
-
 	network_path = os.path.join(current_dir, 'network.json')
 	n.save(network_path)
 	wandb.save(network_path)
@@ -25,8 +22,4 @@ def train(size, eta, lmbda, alpha, training, validation):
 	return n
 
 
-# def get_save_index(data_dir):
-# 	i = 1
-# 	while os.path.isdir(os.path.join(data_dir, str(i))):
-# 		i += 1
-# 	return i
+

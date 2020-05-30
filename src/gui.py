@@ -3,6 +3,7 @@ import tkinter as tk
 
 import numpy as np
 
+from globals import current_dir
 from preprocessor import deskew_image, dots_to_image
 from utils import draw_digit, save_digit
 
@@ -56,12 +57,13 @@ class InputGUI:
 		self.dots = []
 
 	def predict(self):
-		# TODO: Create new directory inside the run folder for this prediction
+		prediction_dir = get_prediction_dir()
+
 		data = dots_to_image(self.dots, self.scale)
-		# save_digit(data, 'raw.png')
 		deskewed = deskew_image(data)
-		# TODO: Save images in prediction folder
-		# save_digit(data, 'deskewed.png')
+
+		save_digit(data, os.path.join(prediction_dir, 'raw.png'))
+		save_digit(data, os.path.join(prediction_dir, 'deskewed.png'))
 
 		# draw_digit(data)
 		# draw_digit(deskewed)
@@ -91,6 +93,20 @@ def run_gui(n=None):
 	root = tk.Tk()
 	InputGUI(root, n)
 	root.mainloop()
+
+
+def get_prediction_dir():
+	prediction_dir = os.path.join(current_dir, 'predictions')
+	if not os.path.isdir(prediction_dir):
+		os.mkdir(prediction_dir)
+
+	i = 1
+	while os.path.isdir(os.path.join(prediction_dir, str(i))):
+		i += 1
+
+	path = os.path.join(prediction_dir, str(i))
+	os.mkdir(path)
+	return path
 
 
 if __name__ == '__main__':

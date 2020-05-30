@@ -292,13 +292,6 @@ def main():
 	for i in range(5):
 		draw_digit(training[i][0])
 
-	# by default, this will save to a new subfolder for files associated
-	# with your run, created in wandb.run.dir (which is ./wandb by default)
-	# TODO: wandb.save("mymodel.h5")
-
-	# you can pass the full path to the Keras model API
-	# model.save(os.path.join(wandb.run.dir, "mymodel.h5"))
-
 
 if __name__ == '__main__':
 	main()

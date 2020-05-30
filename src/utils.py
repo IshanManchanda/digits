@@ -104,7 +104,7 @@ def draw_digit(image):
 
 def save_digit(image, file_path):
 	"""
-	Renders and displays the image to disk.
+	Renders and saves the image to disk.
 	"""
 	arr = (np.array(image).reshape((28, 28)) * 255).astype('uint8')
 	Image.fromarray(arr).resize((256, 256), Image.ANTIALIAS).save(file_path)
