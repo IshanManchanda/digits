@@ -5,7 +5,7 @@ import numpy as np
 
 from globals import current_dir
 from preprocessor import deskew_image, dots_to_image
-from utils import draw_digit, save_digit
+from utils import save_digit
 
 
 class InputGUI:
@@ -26,6 +26,10 @@ class InputGUI:
 		self.label = tk.Label(root, text=desc)
 		self.label.grid(column=1, row=0, columnspan=3)
 
+		# TODO: Add text field(s) to display prediction and confidence
+		# REVIEW: Perhaps allow user to enter correct answer and save
+		#  as additional test data?
+		#  Perhaps make new training data out of it?
 		self.canvas = tk.Canvas(
 			self.root, width=self.size, height=self.size,
 			highlightthickness=2, highlightbackground='black'
