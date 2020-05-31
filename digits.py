@@ -2,11 +2,11 @@ import os
 
 import wandb
 
-from globals import root_dir
-from src.gui import run_gui
-from src.network import NeuralNetwork
-from src.utils import deskew_data, load_data
+from globals import archive_dir, current_dir
+from gui import run_gui
+from network import NeuralNetwork
 from train import train
+from utils import deskew_data, load_data
 
 
 def main():
@@ -17,14 +17,12 @@ def main():
 
 	if os.path.isfile('networks/network.json'):
 		x = input('Trained network found, train new network anyways? (y/n: ')
-		if x.lower() == 'y':
-			# TODO: Backup current network and train new one
-			old_path = os.path.join(root_dir, '')
-			new_path = ''
-			os.rename(old_path, new_path)
-			pass
-		else:
+		if x.lower() != 'y':
 			gui()
+		else:
+			# TODO: Generate name from timestamp
+			new_dir = os.path.join(archive_dir, '1')
+			os.rename(current_dir, new_dir)
 
 	# TODO: Refactor these functions to make sense
 	training, validation, test = load_data()
@@ -37,9 +35,8 @@ def main():
 
 
 def gui():
-	# TODO: Get path to 'current' network.json
-	path = ''
-	n = NeuralNetwork.load(path)
+	network_path = os.path.join(current_dir, 'network.json')
+	n = NeuralNetwork.load(network_path)
 	run_gui(n)
 
 
