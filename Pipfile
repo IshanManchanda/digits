@@ -8,7 +8,7 @@ pypiwin32 = "==223"
 
 [packages]
 matplotlib = "==3.2.2"
-numpy = "==1.19.0"
+numpy = "==1.19.1"
 pillow = "==7.1.2"
 scipy = "==1.5.0"
 wandb = "==0.9.1"
