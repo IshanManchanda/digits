@@ -11,7 +11,7 @@ matplotlib = "==3.3.0"
 numpy = "==1.19.1"
 pillow = "==7.2.0"
 scipy = "==1.5.2"
-wandb = "==0.9.4"
+wandb = "==0.9.6"
 
 [requires]
 python_version = "3.8"
