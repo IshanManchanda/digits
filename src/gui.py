@@ -23,8 +23,14 @@ class InputGUI:
 			'Draw a single digit in the canvas.\n' + \
 			'For best output, try to ensure it is centered\n' + \
 			'in the frame and nearly fills it.'
-		self.label = tk.Label(root, text=desc)
-		self.label.grid(column=1, row=0, columnspan=3)
+		self.label_desc = tk.Label(root, text=desc)
+		self.label_desc.grid(column=1, row=0, columnspan=3)
+
+		self.label_prediction = tk.Label(root, text='')
+		self.label_prediction.grid(column=1, row=2)
+
+		self.label_confidence = tk.Label(root, text='')
+		self.label_confidence.grid(column=2, row=2)
 
 		# TODO: Add text field(s) to display prediction and confidence
 		# REVIEW: Perhaps allow user to enter correct answer and save
@@ -48,9 +54,9 @@ class InputGUI:
 			self.root, text='Close', command=self.root.destroy
 		)
 
-		self.clear_button.grid(column=1, row=2)
-		self.predict_button.grid(column=2, row=2)
-		self.close_button.grid(column=3, row=2)
+		self.clear_button.grid(column=1, row=3)
+		self.predict_button.grid(column=2, row=3)
+		self.close_button.grid(column=3, row=3)
 
 		# Needed for center alignment
 		self.root.grid_columnconfigure(0, weight=1)

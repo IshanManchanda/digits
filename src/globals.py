@@ -16,3 +16,15 @@ if not os.path.isdir(current_dir):
 archive_dir = os.path.join(networks_dir, 'archive')
 if not os.path.isdir(archive_dir):
 	os.mkdir(archive_dir)
+
+data_dir = os.path.join(root_dir, 'data')
+if not os.path.isdir(data_dir):
+	os.mkdir(data_dir)
+
+# The _py3 version of the dataset is a redumped version for Python 3
+# which doesn't use Python 2's latin1 encoding
+mini_path = os.path.join(data_dir, 'mnist_py3_mini_deskewed.pkl.gz')
+deskew_path = os.path.join(data_dir, 'mnist_py3_deskewed.pkl.gz')
+mnist_path = os.path.join(data_dir, 'mnist_py3.pkl.gz')
+
+network_path = os.path.join(networks_dir, 'network.json')

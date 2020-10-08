@@ -5,6 +5,7 @@ import pickle
 import numpy as np
 from PIL import Image
 
+from globals import deskew_path, mini_path, mnist_path
 from preprocessor import deskew_image
 
 
@@ -17,15 +18,7 @@ def load_data(mini=True, deskew=True):
 	"""
 	# TODO: Optimize memory usage by loading only parts.
 
-	# The _py3 version of the dataset is a redumped version for Python 3
-	# which doesn't use Python 2's latin1 encoding
-	data_dir = os.path.join(os.getcwd(), 'data')
-	file_path = (
-		os.path.join(data_dir, 'mnist_py3_mini_deskewed.pkl.gz') if mini
-		else os.path.join(data_dir, 'mnist_py3_deskewed.pkl.gz') if deskew
-		else os.path.join(data_dir, 'mnist_py3.pkl.gz')
-	)
-
+	file_path = mini_path if mini else deskew_path if deskew else mnist_path
 	if not os.path.isfile(file_path):
 		raise FileNotFoundError(f'{file_path} not found!')
 
@@ -51,15 +44,15 @@ def deskew_data():
 	Deskews the MNIST dataset and saves it to disk.
 	"""
 	# Check if deskewed data already exists
-	data_dir = os.path.join(os.getcwd(), 'data')
-	deskew_path = os.path.join(data_dir, 'mnist_py3_deskewed.pkl.gz')
-	if os.path.isfile(deskew_path):
+	exist_deskew = os.path.isfile(deskew_path)
+	exist_mini = os.path.isfile(mini_path)
+	if exist_deskew and exist_mini:
 		return
 
-	data_path = os.path.join(data_dir, 'mnist_py3.pkl.gz')
-	with gzip.open(data_path, 'rb') as f:
+	with gzip.open(mnist_path, 'rb') as f:
 		data = pickle.load(f)
 
+	# TODO: Selectively process data if only mini needs to be generated.
 	processed_data = []
 	for section in data:
 		xs = []
@@ -68,21 +61,20 @@ def deskew_data():
 		processed_data.append((xs, section[1]))
 
 	# TODO: Package into parts of 10k/5k/5k.
+	if not exist_mini:
+		processed_data_mini = [
+			(processed_data[0][0][:5000], processed_data[0][1][:5000]),
+			(processed_data[0][0][:1000], processed_data[0][1][:1000]),
+			(processed_data[0][0][:1000], processed_data[0][1][:1000])
+		]
+		with gzip.open(mini_path, 'wb') as f:
+			# A protocol of -1 means the latest one
+			pickle.dump(processed_data_mini, f, protocol=-1)
 
-	# deskew_mini_path = os.path.join(data_dir,
-	# 'mnist_py3_mini_deskewed.pkl.gz')
-	# processed_data_mini = [
-	# 	(processed_data[0][0][:5000], processed_data[0][1][:5000]),
-	# 	(processed_data[0][0][:1000], processed_data[0][1][:1000]),
-	# 	(processed_data[0][0][:1000], processed_data[0][1][:1000])
-	# ]
-	# with gzip.open(deskew_mini_path, 'wb') as f:
-	# A protocol of -1 means the latest one
-	# pickle.dump(processed_data_mini, f, protocol=-1)
-
-	with gzip.open(deskew_path, 'wb') as f:
-		# A protocol of -1 means the latest one
-		pickle.dump(processed_data, f, protocol=-1)
+	if not exist_deskew:
+		with gzip.open(deskew_path, 'wb') as f:
+			# A protocol of -1 means the latest one
+			pickle.dump(processed_data, f, protocol=-1)
 
 
 def get_expected_y(digit):
@@ -115,5 +107,4 @@ def main():
 
 
 if __name__ == '__main__':
-	os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 	main()
