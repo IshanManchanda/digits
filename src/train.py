@@ -20,6 +20,3 @@ def train(size, eta, lmbda, alpha, training, validation):
 
 	n.plot(os.path.join(current_dir, 'accuracy.png'))
 	return n
-
-
-
