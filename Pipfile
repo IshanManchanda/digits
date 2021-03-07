@@ -7,10 +7,10 @@ verify_ssl = true
 pypiwin32 = "==223"
 
 [packages]
-matplotlib = "==3.3.3"
+matplotlib = "==3.3.4"
 numpy = "==1.20.1"
 pillow = "==8.1.1"
-scipy = "==1.5.4"
+scipy = "==1.6.1"
 wandb = "==0.10.21"
 
 [requires]
