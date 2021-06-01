@@ -1,0 +1,39 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "23:30"
+  open-pull-requests-limit: 99
+  ignore:
+  - dependency-name: wandb
+    versions:
+    - 0.10.15
+    - 0.10.16
+    - 0.10.17
+    - 0.10.18
+    - 0.10.19
+    - 0.10.20
+    - 0.10.21
+    - 0.10.22
+    - 0.10.23
+    - 0.10.24
+    - 0.10.25
+    - 0.10.26
+    - 0.10.27
+  - dependency-name: matplotlib
+    versions:
+    - 3.4.0
+  - dependency-name: scipy
+    versions:
+    - 1.6.0
+    - 1.6.2
+  - dependency-name: pillow
+    versions:
+    - 8.1.0
+    - 8.1.2
+  - dependency-name: numpy
+    versions:
+    - 1.19.5
+    - 1.20.0
