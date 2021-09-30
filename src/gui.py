@@ -3,9 +3,9 @@ import tkinter as tk
 
 import numpy as np
 
-from globals import current_dir
-from preprocessor import deskew_image, dots_to_image
-from utils import save_digit
+from src.globals import current_dir
+from src.preprocessor import deskew_image, dots_to_image
+from src.utils import draw_digit, save_digit
 
 
 class InputGUI:
@@ -73,11 +73,11 @@ class InputGUI:
 		deskewed = deskew_image(data)
 
 		save_digit(data, os.path.join(prediction_dir, 'raw.png'))
-		save_digit(data, os.path.join(prediction_dir, 'deskewed.png'))
+		save_digit(deskewed, os.path.join(prediction_dir, 'deskewed.png'))
 
 		# DEBUG: Draw digits to check deskewing
-		# draw_digit(data)
-		# draw_digit(deskewed)
+		draw_digit(data)
+		draw_digit(deskewed)
 
 		if self.n:
 			# TODO: Save raw as well as deskewed prediction as json

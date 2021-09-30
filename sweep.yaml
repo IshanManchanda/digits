@@ -1,0 +1,45 @@
+program: sweep.py
+method: bayes
+project: digits
+entity: ishanmanchanda
+command:
+    - C:\Users\ishan\AppData\Local\pypoetry\Cache\virtualenvs\digits-TB0kwcBe-py3.9\Scripts\python.exe
+    - ${program}
+    - ${args}
+metric:
+    name: accuracy
+    goal: maximize
+parameters:
+    n_layers:
+        min: 1
+        max: 3
+        distribution: int_uniform
+    n_neurons:
+        min: 32
+        max: 256
+        distribution: int_uniform
+    eta:
+        max: 0.1
+        min: 0.001
+        distribution: uniform
+    lmbda:
+        max: 1
+        min: 0.01
+        distribution: uniform
+    alpha:
+        max: 0.1
+        min: 0.01
+        distribution: uniform
+    batch_size:
+        max: 100
+        min: 10
+        distribution: int_uniform
+    epochs:
+        max: 100
+        min: 10
+        distribution: int_uniform
+    deskew:
+        value: "true"
+    mini:
+        value: "true"
+

@@ -4,7 +4,7 @@ import numpy as np
 import wandb
 from matplotlib import pyplot as plt
 
-from utils import draw_digit, load_data
+from src.utils import draw_digit, load_data
 
 
 class LeakyReLU:
@@ -25,6 +25,23 @@ class LeakyReLU:
 		return np.where(a >= 0, 1, self.alpha)
 
 
+def log_loss(y, a):
+	# Our chosen error function is the Log Loss function.
+	# This is also called the "Cross Entropy Loss" and is computed as:
+	# f(a) = -y * log(a) - (1 - y) * log(1 - a)
+	# i.e, -log(a) if y is 1, and -log(1 - a) if y is 0.
+	return np.where(y, -np.log(a), -np.log(1 - a)).sum()
+
+
+def softmax(z):
+	# We offset each element of z by the maximum to prevent overflows.
+	# nan_to_num is used to handle extremely small values. These are
+	# made 0.
+	z = np.nan_to_num(np.exp(z - np.max(z)))
+	z_sum = np.sum(z)
+	return np.nan_to_num(z / z_sum)
+
+
 class NeuralNetwork:
 	def __init__(self, ns, eta=0.5, lmbda=0, alpha=0.05):
 		print(f'ns: {ns}, eta: {eta}, lambda: {lmbda}, alpha: {alpha}')
@@ -42,7 +59,7 @@ class NeuralNetwork:
 
 		# Log hyperparameters in wandb to analyze later.
 		wandb.config.update({
-			'ns': ns, 'eta': eta, 'lambda': lmbda, 'alpha': alpha
+			'architecture': ns, 'eta': eta, 'lambda': lmbda, 'alpha': alpha
 		})
 
 		# Randomly initialize thetas (weights) with a normal distribution
@@ -69,10 +86,13 @@ class NeuralNetwork:
 	def train(self, data, validation_data=None, epochs=10, batch_size=20):
 		# We generate all the indices for the training data.
 		# We will shuffle these indices each epoch to randomly order the data.
-		# This is more efficient than zipping and shuffling the arrays.
+		# This is more efficient than zipping and shuffling the arrays directly
 		perm = np.arange(len(data))
 		self.performance = []
 		n_validation = len(validation_data)
+
+		# Log hyperparameters in wandb to analyze later.
+		wandb.config.update({'epochs': epochs, 'batch_size': batch_size})
 
 		if validation_data is not None:
 			correct = self.validate(validation_data)
@@ -156,7 +176,7 @@ class NeuralNetwork:
 		# Returns the number of correct predictions
 		return sum(
 			np.argmax(y) == np.argmax(self.predict(x))
-			for x, y in validation_data
+				for x, y in validation_data
 		)
 
 	def get_activations(self, x):
@@ -173,8 +193,7 @@ class NeuralNetwork:
 			# associated with this layer and the activations of the previous
 			# layer plus the biases.
 			z = np.array(
-				np.dot(theta, activations[-1]) + bias,
-				dtype='float64'
+				np.dot(theta, activations[-1]) + bias, dtype='float64'
 			)
 
 			# Apply the activation (LReLU) function to get the activations
@@ -262,23 +281,6 @@ class NeuralNetwork:
 				'Number of inputs != number of input neurons! '
 				f'Expected: {self.ns[0]}, received: {len(x)}'
 			)
-
-
-def log_loss(y, a):
-	# Our chosen error function is the Log Loss function.
-	# This is also called the "Cross Entropy Loss" and is computed as:
-	# f(a) = -y * log(a) - (1 - y) * log(1 - a)
-	# i.e, -log(a) if y is 1, and -log(1 - a) if y is 0.
-	return np.where(y, -np.log(a), -np.log(1 - a)).sum()
-
-
-def softmax(z):
-	# We offset each element of z by the maximum to prevent overflows.
-	# nan_to_num is used to handle extremely small values. These are
-	# made 0.
-	z = np.nan_to_num(np.exp(z - np.max(z)))
-	z_sum = np.sum(z)
-	return np.nan_to_num(z / z_sum)
 
 
 def main():
