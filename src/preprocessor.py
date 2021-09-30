@@ -20,7 +20,7 @@ def dots_to_image(dots, scale):
 
 def size_normalize(image):
 	"""
-	Returns a normalized version of the inputted image.
+	Returns a normalized version of the input image.
 
 	The digit is scaled to fit in a 20x20 box,
 	and then padded with whitespace to 28x28
@@ -34,11 +34,12 @@ def size_normalize(image):
 	image = image[i:j]
 
 	# Similarly for the sides
-	while np.sum(image[:, 0]) == 0:
-		image = np.delete(image, 0, 1)
-
-	while np.sum(image[:, -1]) == 0:
-		image = np.delete(image, -1, 1)
+	i, j = 0, -1
+	while np.sum(image[:, i]) == 0:
+		i += 1
+	while np.sum(image[:, j]) == 0:
+		j -= 1
+	image = image[:, i:j]
 
 	# Now, we want the image to fit a 20x20 box. Thus, we fit the max of the 2
 	# dimensions to this desired size and scale the other accordingly.
@@ -82,11 +83,10 @@ def compute_moments(image):
 	offset_y = c1 - mu_y
 
 	# Variance about the axes
-	# Looks similar to moment of inertia... hmm...
 	variance_x = np.sum(offset_x ** 2 * image) / sum_of_pixels
 	variance_y = np.sum(offset_y ** 2 * image) / sum_of_pixels
 
-	# The covariance is a measure of how "related" 2 quantities are.
+	# The covariance is a measure of how "linearly related" 2 quantities are.
 	# If one increases with the other, they show a positive covariance.
 	covariance = np.sum(offset_x * offset_y * image) / sum_of_pixels
 
@@ -119,5 +119,5 @@ def deskew_image(image):
 	deskewed = interpolation.affine_transform(image, affine, offset=offset)
 
 	# The image needs to be renormalized after the transformation
-	# noinspection PyArgumentList
-	return (deskewed - deskewed.min()) / (deskewed.max() - deskewed.min())
+	min_val, max_val = np.min(deskewed), np.max(deskewed)
+	return (deskewed - min_val) / (max_val - min_val)

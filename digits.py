@@ -1,13 +1,14 @@
 import os
 
+import numpy as np
 import wandb
 
-from globals import archive_dir, current_dir, deskew_path, mini_path, \
+from src.globals import archive_dir, current_dir, deskew_path, mini_path, \
 	network_path
-from gui import run_gui
-from network import NeuralNetwork
-from train import train
-from utils import deskew_data, load_data
+from src.gui import run_gui
+from src.network import NeuralNetwork
+from src.train import train
+from src.utils import deskew_data, load_data
 
 
 def main():
@@ -35,15 +36,25 @@ def main():
 	training, validation, test = load_data(mini=mini, deskew=deskew)
 
 	wandb.init(project='digits', entity='ishanmanchanda')
+	wandb.config.update({'mini': mini, 'deskew': deskew})
+
 	architecture = [784, 128, 10]
 	eta = 0.008
 	lmbda = 0.2
 	alpha = 0.05
-	wandb.conf
+	epochs = 20
+	batch_size = 40
+	size_training = 5000
+	size_validation = 500
 
-	# [Network structure], eta, lambda, alpha, training, validation
-	n = train(architecture, eta, lmbda, alpha, training, validation)
 	try:
+		# Architecture, eta, lambda, alpha, epochs, batch_size, training, validation
+		# np.random.permutation() for training and validation data
+		n = train(
+			architecture, eta, lmbda, alpha, epochs, batch_size,
+			np.random.permutation(training)[:size_training],
+			np.random.permutation(validation)[:size_validation]
+		)
 		run_gui(n)
 	except:
 		wandb.run.save()

@@ -3,20 +3,16 @@ import os
 import numpy as np
 import wandb
 
-from globals import current_dir
-from network import NeuralNetwork
+from src.globals import current_dir, network_path
+from src.network import NeuralNetwork
 
 
-def train(size, eta, lmbda, alpha, training, validation):
-	n = NeuralNetwork(size, eta=eta, lmbda=lmbda, alpha=alpha)
-	n.train(
-		np.random.permutation(training)[:5000],
-		np.random.permutation(validation)[:500], epochs=5, batch_size=20
-	)
+def train(size, eta, lmbda, alpha, epochs, batch_size, training, validation):
+	nn = NeuralNetwork(size, eta=eta, lmbda=lmbda, alpha=alpha)
+	nn.train(training, validation, epochs=epochs, batch_size=batch_size)
 
-	network_path = os.path.join(current_dir, 'network.json')
-	n.save(network_path)
+	nn.save(network_path)
 	wandb.save(network_path)
 
-	n.plot(os.path.join(current_dir, 'accuracy.png'))
-	return n
+	nn.plot(os.path.join(current_dir, 'accuracy.png'))
+	return nn

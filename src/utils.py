@@ -5,8 +5,8 @@ import pickle
 import numpy as np
 from PIL import Image
 
-from globals import deskew_path, mini_path, mnist_path
-from preprocessor import deskew_image
+from src.globals import deskew_path, mini_path, mnist_path
+from src.preprocessor import deskew_image
 
 
 def load_data(mini=True, deskew=True):
@@ -30,11 +30,11 @@ def load_data(mini=True, deskew=True):
 	# containing 50K, 10K, and 10K examples each.
 	# We return this data as a list of tuples containing input-output pairs
 	for section in data:
-		# We reshape the inputs, and convert the outputs into
-		# "one-hot encoded vectors" which is just the output vector.
+		# We reshape the inputs into a 784-dimensional vector
+		# and convert the outputs into one-hot encoded vectors.
 		processed_data.append(list(zip(
 			[np.array(x).reshape((784,)) for x in section[0]],
-			[get_expected_y(y) for y in section[1]]
+			[one_hot_encode(y) for y in section[1]]
 		)))
 	return processed_data
 
@@ -77,9 +77,9 @@ def deskew_data():
 			pickle.dump(processed_data, f, protocol=-1)
 
 
-def get_expected_y(digit):
+def one_hot_encode(digit):
 	"""
-	Returns a one-hot encoded vector of the inputted digit.
+	Returns a one-hot encoded vector of the input digit.
 	"""
 	y = np.array([0] * 10)
 	y[digit] = 1
