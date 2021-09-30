@@ -27,4 +27,4 @@ mini_path = os.path.join(data_dir, 'mnist_py3_mini_deskewed.pkl.gz')
 deskew_path = os.path.join(data_dir, 'mnist_py3_deskewed.pkl.gz')
 mnist_path = os.path.join(data_dir, 'mnist_py3.pkl.gz')
 
-network_path = os.path.join(networks_dir, 'network.json')
+network_path = os.path.join(current_dir, 'network.json')

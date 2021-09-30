@@ -75,6 +75,7 @@ class InputGUI:
 		save_digit(data, os.path.join(prediction_dir, 'raw.png'))
 		save_digit(data, os.path.join(prediction_dir, 'deskewed.png'))
 
+		# DEBUG: Draw digits to check deskewing
 		# draw_digit(data)
 		# draw_digit(deskewed)
 

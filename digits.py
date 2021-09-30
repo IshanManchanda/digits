@@ -34,9 +34,15 @@ def main():
 	#  so that it can be used across runs?
 	training, validation, test = load_data(mini=mini, deskew=deskew)
 
-	wandb.init(project='digits')
+	wandb.init(project='digits', entity='ishanmanchanda')
+	architecture = [784, 128, 10]
+	eta = 0.008
+	lmbda = 0.2
+	alpha = 0.05
+	wandb.conf
+
 	# [Network structure], eta, lambda, alpha, training, validation
-	n = train([784, 128, 10], 0.008, 0.2, 0.05, training, validation)
+	n = train(architecture, eta, lmbda, alpha, training, validation)
 	try:
 		run_gui(n)
 	except:
