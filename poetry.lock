@@ -330,7 +330,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "wandb"
-version = "0.12.3"
+version = "0.12.7"
 description = "A CLI and library for interacting with the Weights and Biases API."
 category = "main"
 optional = false
@@ -357,10 +357,10 @@ yaspin = ">=1.0.0"
 [package.extras]
 aws = ["boto3"]
 gcp = ["google-cloud-storage"]
-grpc = ["grpcio (==1.27.2)"]
 kubeflow = ["kubernetes", "minio", "google-cloud-storage", "sh"]
 launch = ["jupyter-repo2docker", "nbconvert", "chardet", "iso8601", "typing-extensions", "yaspin"]
-media = ["numpy", "moviepy", "pillow", "bokeh", "soundfile", "plotly"]
+media = ["numpy", "moviepy", "pillow", "bokeh", "soundfile", "plotly", "rdkit-pypi"]
+service = ["grpcio (>=1.27.2)", "setproctitle"]
 sweeps = ["numpy (>=1.15,<1.21)", "scipy (>=1.5.4)", "pyyaml", "scikit-learn (==0.24.1)", "jsonschema (>=3.2.0)", "jsonref (>=0.2)", "pydantic (>=1.8.2)"]
 
 [[package]]
@@ -377,7 +377,7 @@ termcolor = ">=1.1.0,<2.0.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.10"
-content-hash = "6860aad2f4ac34583631b1fa8e2ef61c00778689061b9aeb8d06c4b4370df03c"
+content-hash = "1ada19fd9466deeea0553c4d2311491f780efedfcc518126c09a29f835b615d9"
 
 [metadata.files]
 certifi = [
@@ -733,8 +733,8 @@ urllib3 = [
     {file = "urllib3-1.26.7.tar.gz", hash = "sha256:4987c65554f7a2dbf30c18fd48778ef124af6fab771a377103da0585e2336ece"},
 ]
 wandb = [
-    {file = "wandb-0.12.3-py2.py3-none-any.whl", hash = "sha256:a19ce00b89dc1fc55d5f695d96148cb8244022e9a4ed3fc21f02a0f5f0c15c38"},
-    {file = "wandb-0.12.3.tar.gz", hash = "sha256:96d5d449b0b7e71641e7b01362a32bbfdc9e7a1599ded0ec930033ecbaec0e72"},
+    {file = "wandb-0.12.7-py2.py3-none-any.whl", hash = "sha256:92e5a89e681cfffe70b31c0645f6ca20668d3211951a1db01a39687ca39e05f4"},
+    {file = "wandb-0.12.7.tar.gz", hash = "sha256:d1c2a6cd3fc57b5a75ff18d4bb69f088d0bd1d0ad22c98005a37e037c85442c7"},
 ]
 yaspin = [
     {file = "yaspin-2.1.0-py3-none-any.whl", hash = "sha256:d574cbfaf0a349df466c91f7f81b22460ae5ebb15ecb8bf9411d6049923aee8d"},
