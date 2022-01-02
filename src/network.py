@@ -10,20 +10,20 @@ from src.utils import draw_digit, load_data
 
 class LeakyReLU:
     # The Leaky Rectifier function will serve as our activation function
-    def __init__(self, alpha):
-        self.alpha = alpha  # Parameter for the function
+    def __init__(self, beta):
+        self.beta = beta  # Parameter for the function
 
     def f(self, z):
         # The Leaky Rectifier is computed as:
         # f(z) = {        z,   z >= 0
-        #        {alpha * z,   z < 0
-        return np.where(z >= 0, z, self.alpha * z)
+        #        { beta * z,   z < 0
+        return np.where(z >= 0, z, self.beta * z)
 
     def d(self, a):
         # The derivative of the function is given by:
         # f'(z) = {    1,   z >= 0 which implies f(z) >= 0
-        #         {alpha,    z < 0 which implies f(z) < 0
-        return np.where(a >= 0, 1, self.alpha)
+        #         { beta,    z < 0 which implies f(z) < 0
+        return np.where(a >= 0, 1, self.beta)
 
 
 def log_loss(y, a):
@@ -44,23 +44,23 @@ def softmax(z):
 
 
 class NeuralNetwork:
-    def __init__(self, ns, eta=0.5, lmbda=0, alpha=0.05):
-        print(f'ns: {ns}, eta: {eta}, lambda: {lmbda}, alpha: {alpha}')
+    def __init__(self, ns, alpha=0.5, lmbda=0, beta=0.05):
+        print(f'ns: {ns}, alpha: {alpha}, lambda: {lmbda}, beta: {beta}')
         # Network Structure
         self.n = len(ns)  # Number of layers
         self.ns = ns  # Number of neurons in each layer
 
         # Hyper Parameters
-        self.eta = eta  # Learning rate
+        self.alpha = alpha  # Learning rate
         self.lmbda = lmbda  # Coefficient of Regularization
         # Note: The coefficient is called "lmbda" as "lambda" is a keyword.
 
         # Activation Function Object
-        self.act_fn = LeakyReLU(alpha)  # Parameter for LReLU
+        self.act_fn = LeakyReLU(beta)  # Parameter for LReLU
 
         # Log hyperparameters in wandb to analyze later.
         wandb.config.update({
-            'architecture': ns, 'eta': eta, 'lambda': lmbda, 'alpha': alpha
+            'architecture': ns, 'alpha': alpha, 'lambda': lmbda, 'beta': beta
         })
 
         # Randomly initialize thetas (weights) with a normal distribution
@@ -84,39 +84,40 @@ class NeuralNetwork:
         # Our prediction is simply the activations of the output (last) layer.
         return self.get_activations(x)[-1]
 
-    def train(self, data, validation_data=None, epochs=10, batch_size=20):
+    def train(self, train, val=None, epochs=10, batch_size=20):
         # We generate all the indices for the training data.
         # We will shuffle these indices each epoch to randomly order the data.
         # This is more efficient than zipping and shuffling the arrays directly
-        perm = np.arange(len(data))
+        n_train, n_val = train[0].shape[1], val[0].shape[1]
+        perm = np.arange(n_train)
         self.performance = []
-        n_validation = len(validation_data)
 
         # Log hyperparameters in wandb to analyze later.
         wandb.config.update({'epochs': epochs, 'batch_size': batch_size})
 
         # Log initial accuracy and loss for train and validation sets
-        self.report_metrics(data, 'train', 0)
-        if validation_data is not None:
-            self.report_metrics(validation_data, 'dev', 0)
+        self.report_metrics(train, 'train', 0)
+        if val is not None:
+            self.report_metrics(val, 'val', 0)
 
         for i in range(1, epochs + 1):
             np.random.shuffle(perm)
 
             # We split the training data in batches, each of size batch_size.
-            for j in range(0, len(data), batch_size):
+            for j in range(0, len(train), batch_size):
                 # From the shuffled indices, we select a range
                 # and pick all the examples in that range.
-                batch = [data[x] for x in perm[j:j + batch_size]]
+                x = train[0][perm[j:j + batch_size]]
+                y = train[1][perm[j:j + batch_size]]
 
                 # Each batch is then used to train the network
-                self.train_batch(batch)
+                self.train_batch(x, y)
 
             # Compute metrics for training data for learning curve
             # Log the data in wandb and also locally.
-            self.report_metrics(data, 'train', i)
-            if validation_data is not None:
-                perf = self.report_metrics(validation_data, 'dev', i)
+            self.report_metrics(train, 'train', i)
+            if val is not None:
+                perf = self.report_metrics(val, 'val', i)
                 # Log just accuracy for now
                 self.performance.append(perf[0])
 
@@ -130,8 +131,8 @@ class NeuralNetwork:
             self.performance, 'r'
         )
         plt.title(
-            f'ns: {self.ns}, eta: {self.eta}, '
-            f'lambda: {self.lmbda}, alpha: {self.act_fn.alpha}.')
+            f'ns: {self.ns}, alpha: {self.alpha}, '
+            f'lambda: {self.lmbda}, beta: {self.act_fn.beta}.')
         plt.xlabel('Number of Epochs')
         plt.ylabel('Prediction Accuracy (%)')
         if filename:
@@ -147,9 +148,9 @@ class NeuralNetwork:
         # Unpickling and loading will not work in that case.
         data = {
             'ns': self.ns,
-            'eta': self.eta,
+            'alpha': self.alpha,
             'lmbda': self.lmbda,
-            'alpha': self.act_fn.alpha,
+            'beta': self.act_fn.beta,
             'performance': self.performance,
             'thetas': [t.tolist() for t in self.thetas],
             'biases': [b.tolist() for b in self.biases]
@@ -164,7 +165,7 @@ class NeuralNetwork:
             data = json.load(f)
 
         n = NeuralNetwork(
-            data['ns'], data['eta'], data['lmbda'], data['alpha']
+            data['ns'], data['alpha'], data['lmbda'], data['beta']
         )
         n.thetas = [np.array(t) for t in data['thetas']]
         n.biases = [np.array(b) for b in data['biases']]
@@ -224,12 +225,16 @@ class NeuralNetwork:
         activations.append(softmax(z))
         return activations
 
-    def train_batch(self, batch):
+    def train_batch(self, x, y):
         delta_thetas = [
             np.zeros((self.ns[i], self.ns[i - 1]))
             for i in range(1, self.n)
         ]
         delta_biases = [np.zeros((x,)) for x in self.ns[1:]]
+
+        # TODO: get all activations
+        # TODO: difference
+        # TODO: Backprop and accumulate
 
         # Iterate over all examples in the batch
         for x, y in batch:
@@ -280,7 +285,7 @@ class NeuralNetwork:
                 delta_thetas[i] += np.dot(error_v, a_t)
                 derivatives[i] = np.dot(theta_t, error)
 
-        scale_factor = self.eta / len(batch)
+        scale_factor = self.alpha / len(batch)
         for i in range(self.n - 1):
             # L2 regularization term
             self.thetas[i] *= 1 - (scale_factor * self.lmbda)

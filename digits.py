@@ -39,19 +39,19 @@ def main():
     wandb.config.update({'mini': mini, 'deskew': deskew})
 
     architecture = [784, 128, 128, 10]
-    eta = 0.008
+    alpha = 0.008
     lmbda = 0.2
-    alpha = 0.05
+    beta = 0.05
     epochs = 20
     batch_size = 40
     size_training = 5000
     size_validation = 500
 
     try:
-        # Architecture, eta, lambda, alpha, epochs, batch_size, training, validation
+        # Architecture, alpha, lambda, beta, epochs, batch_size, training, validation
         # np.random.permutation() for training and validation data
         n = train(
-            architecture, eta, lmbda, alpha, epochs, batch_size,
+            architecture, alpha, lmbda, beta, epochs, batch_size,
             np.random.permutation(training)[:size_training],
             np.random.permutation(validation)[:size_validation]
         )
