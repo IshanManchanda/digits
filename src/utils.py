@@ -17,7 +17,6 @@ def load_data(mini=True, deskew=True):
     where the outputs are one-hot encoded vectors.
     """
     # TODO: Optimize memory usage by loading only parts.
-
     file_path = mini_path if mini else deskew_path if deskew else mnist_path
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f'{file_path} not found!')
@@ -27,15 +26,15 @@ def load_data(mini=True, deskew=True):
     processed_data = []
 
     # Data contains 3 "sections": training, validation, and test
-    # containing 50K, 10K, and 10K examples each.
-    # We return this data as a list of tuples containing input-output pairs
+    # containing 50K, 10K, and 10K examples each (full; mini is 1/10 of this).
+    # We return this data as a list of tuples. First element in each tuple
+    # is a numpy x matrix and the second is a numpy y matrix.
     for section in data:
-        # We reshape the inputs into a 784-dimensional vector
-        # and convert the outputs into one-hot encoded vectors.
-        processed_data.append(list(zip(
-            [np.array(x).reshape((784,)) for x in section[0]],
-            [one_hot_encode(y) for y in section[1]]
-        )))
+        # X matrix is 784 x n
+        x = np.array(section[0]).T
+        # One-hot encode the y values to get a 10 x n matrix.
+        y = one_hot_encode(section[1])
+        processed_data.append((x, y))
     return processed_data
 
 
@@ -77,12 +76,13 @@ def deskew_data():
             pickle.dump(processed_data, f, protocol=-1)
 
 
-def one_hot_encode(digit):
+def one_hot_encode(digits):
     """
-    Returns a one-hot encoded vector of the input digit.
+    Returns a one-hot encoded vector matrix of the input digit list.
     """
-    y = np.array([0] * 10)
-    y[digit] = 1
+    y = np.zeros((10, len(digits)))
+    for i, d in enumerate(digits):
+        y[d, i] = 1
     return y
 
 
