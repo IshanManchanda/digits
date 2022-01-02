@@ -436,7 +436,7 @@ termcolor = ">=1.1.0,<2.0.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.10"
-content-hash = "b0454c3f99ef4f8e0e5872cb7ef70314113c7fb68f9ca5b435c9dc19c8792ef1"
+content-hash = "6860aad2f4ac34583631b1fa8e2ef61c00778689061b9aeb8d06c4b4370df03c"
 
 [metadata.files]
 certifi = [
