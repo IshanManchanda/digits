@@ -410,7 +410,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "wandb"
-version = "0.12.21"
+version = "0.13.3"
 description = "A CLI and library for interacting with the Weights and Biases API."
 category = "main"
 optional = false
@@ -438,15 +438,15 @@ azure = ["azure-storage-blob"]
 gcp = ["google-cloud-storage"]
 grpc = ["grpcio (>=1.27.2)"]
 kubeflow = ["google-cloud-storage", "kubernetes", "minio", "sh"]
-launch = ["boto3", "chardet", "google-cloud-storage", "iso8601", "kubernetes", "nbconvert", "nbformat", "typing-extensions"]
+launch = ["boto3", "botocore", "chardet", "google-cloud-storage", "iso8601", "kubernetes", "nbconvert", "nbformat", "typing-extensions"]
 media = ["bokeh", "moviepy", "numpy", "pillow", "plotly", "rdkit-pypi", "soundfile"]
 models = ["cloudpickle"]
-sweeps = ["sweeps (>=0.1.0)"]
+sweeps = ["sweeps (>=0.2.0)"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.10"
-content-hash = "f7afe86f4df060929a167782807c745eac29d2034a897240f76094f3359339cf"
+content-hash = "119d4fb37c69f9551985846f4c5bed5951ac50cfb1a73d7101e7bedb093125a4"
 
 [metadata.files]
 certifi = [
@@ -1000,6 +1000,6 @@ urllib3 = [
     {file = "urllib3-1.26.7.tar.gz", hash = "sha256:4987c65554f7a2dbf30c18fd48778ef124af6fab771a377103da0585e2336ece"},
 ]
 wandb = [
-    {file = "wandb-0.12.21-py2.py3-none-any.whl", hash = "sha256:150842447d355d90dc7f368b824951a625e5b2d1be355a00e99b11b73728bc1f"},
-    {file = "wandb-0.12.21.tar.gz", hash = "sha256:1975ff88c5024923c3321c93cfefb8d9b871543c0b009f34001bf0f31e444b04"},
+    {file = "wandb-0.13.3-py2.py3-none-any.whl", hash = "sha256:a246ed531ae405f2c95d299adb7311f2cf333c6c73ce36e3fcaaae60f0817c6c"},
+    {file = "wandb-0.13.3.tar.gz", hash = "sha256:8f91a8b67949313769c686e4f5139e4c247de8ce140e72fdcdd7896da2ea1c87"},
 ]
