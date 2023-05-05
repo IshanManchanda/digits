@@ -10,7 +10,7 @@ matplotlib = "^3.5.2"
 numpy = "^1.23.0"
 Pillow = "^9.2.0"
 scipy = "^1.8.1"
-wandb = "^0.12.21"
+wandb = "^0.15.2"
 
 [tool.poetry.dev-dependencies]
 
